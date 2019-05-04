@@ -22,7 +22,7 @@ func NewMongoDBUserRepository(Conn *mongodm.Connection) user.Repository {
 func (m *mongoDBUserRepository) fetch(ctx context.Context, query interface{}, limit int, skip int, sort string) (res []*models.User, nextSkip int, err error) {
 	User := m.Conn.Model("User")
 	user := []*models.User{}
-	err = User.Find(query).Sort(sort).Skip(skip).Limit(limit).Exec(&user)
+	err = User.Find(query).Sort(sort).Skip(skip).Limit(limit).Populate("TripHistory").Exec(&user)
 	if err != nil {
 		log.Fatal("error in find repo")
 		return nil, skip + limit, err
@@ -33,7 +33,7 @@ func (m *mongoDBUserRepository) fetch(ctx context.Context, query interface{}, li
 func (m *mongoDBUserRepository) Fetch(ctx context.Context, limit int, skip int, sort string) (res []*models.User, nextSkip int, err error) {
 	query := bson.M{"deleted": false}
 	if sort == "" {
-		sort = "_modifiedAt"
+		sort = "_modifiedAt"jdi 
 	}
 	result, nextSkip, err := m.fetch(ctx, query, limit, skip, sort)
 	if err != nil {
@@ -87,7 +87,7 @@ func (m *mongoDBUserRepository) Store(ctx context.Context, user *models.User) er
 	return nil
 }
 func (m *mongoDBUserRepository) Delete(ctx context.Context, id string) error {
-	user, err := m.GetByID(ctx, id)
+	use r, err := m.GetByID(ctx, id)
 	if err != nil {
 		log.Fatal("error when get user by id")
 		return err
