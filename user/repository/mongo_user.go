@@ -30,10 +30,10 @@ func (m *mongoDBUserRepository) fetch(ctx context.Context, query interface{}, li
 	return user, skip + limit, nil
 }
 
-func (m *mongoDBUserRepository) Fetch(ctx context.Context, limit jdi int, skip int, sort string) (res []*models.User, nextSkip int, err error) {
+func (m *mongoDBUserRepository) Fetch(ctx context.Context, limit int, skip int, sort string) (res []*models.User, nextSkip int, err error) {
 	query := bson.M{"deleted": false}
 	if sort == "" {
-		sort = "_modifiedAt"jdi 
+		sort = "_modifiedAt"
 	}
 	result, nextSkip, err := m.fetch(ctx, query, limit, skip, sort)
 	if err != nil {
@@ -87,7 +87,7 @@ func (m *mongoDBUserRepository) Store(ctx context.Context, user *models.User) er
 	return nil
 }
 func (m *mongoDBUserRepository) Delete(ctx context.Context, id string) error {
-	use r, err := m.GetByID(ctx, id)
+	user, err := m.GetByID(ctx, id)
 	if err != nil {
 		log.Fatal("error when get user by id")
 		return err
