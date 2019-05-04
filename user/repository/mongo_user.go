@@ -30,7 +30,7 @@ func (m *mongoDBUserRepository) fetch(ctx context.Context, query interface{}, li
 	return user, skip + limit, nil
 }
 
-func (m *mongoDBUserRepository) Fetch(ctx context.Context, limit int, skip int, sort string) (res []*models.User, nextSkip int, err error) {
+func (m *mongoDBUserRepository) Fetch(ctx context.Context, limit jdi int, skip int, sort string) (res []*models.User, nextSkip int, err error) {
 	query := bson.M{"deleted": false}
 	if sort == "" {
 		sort = "_modifiedAt"jdi 
