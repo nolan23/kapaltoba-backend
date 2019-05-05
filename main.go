@@ -48,8 +48,8 @@ func main() {
 	var con, err = mongodm.Connect(dbConfig)
 	con.Register(&models.User{}, "user")
 	con.Register(&models.Transaction{}, "transaction")
-	con.Register(&models.Trip, "trip")
-	con.Register(&models.Boat, "boat")
+	con.Register(&models.Trip{}, "trip")
+	con.Register(&models.Boat{}, "boat")
 	if err != nil {
 		log.Fatal(err)
 	}
