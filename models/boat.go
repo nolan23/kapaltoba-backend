@@ -6,6 +6,7 @@ import (
 
 type Boat struct {
 	mongodm.DocumentBase `json:",inline" bson:",inline"`
+	BoatName             string   `json:"boatname" bson:"boatname"`
 	Captain              string   `bson:"captain" json:"captain"`
 	ViceCaptains         []string `bson:"vicecaptains" json:"vicecaptains"`
 	Pictures             []string `bson:"pictures" json:"pictures"`

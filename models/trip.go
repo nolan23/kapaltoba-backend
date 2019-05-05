@@ -15,5 +15,5 @@ type Trip struct {
 	Status               string      `json:"status" bson:"status"`
 	Price                float64     `json:"price" bson:"price"`
 	Duration             string      `json:"duration" bson:"duration"`
-	Passenger            interface{} `json:"passenger" bson:"passenger"`
+	Passenger            interface{} `json:"passenger" bson:"passenger" model:"User"`
 }
