@@ -7,7 +7,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/nolan23/kapaltoba-backend/models"
-	"github.com/nolan23/kapaltoba-backend/user"
+	"github.com/nolan23/kapaltoba-backend/transaction"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,21 +15,20 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-// HttpUserHandler  represent the httphandler for user
-type HttpUserHandler struct {
-	UserUsecase user.Usecase
+type HttpTransactionHandler struct {
+	TransactionUsecase transaction.Usecase
 }
 
-func NewUserHttpHandler(e *echo.Echo, us user.Usecase) {
-	handler := &HttpUserHandler{
-		UserUsecase: us,
+func NewTransactionHttpHandler(e *echo.Echo, ts transaction.Usecase) {
+	handler := &HttpTransactionHandler{
+		TransactionUsecase: ts,
 	}
-	e.GET("/users", handler.FetchUser)
-	e.POST("/user", handler.Store)
-	e.GET("user/:id", handler.GetByID)
+	e.GET("/transactions", handler.FetchTransaction)
+	e.POST("/transaction", handler.Store)
+	e.GET("transaction/:id", handler.GetByID)
 }
 
-func (h *HttpUserHandler) FetchUser(c echo.Context) error {
+func (h *HttpTransactionHandler) FetchTransaction(c echo.Context) error {
 	limit := c.QueryParam("limit")
 	limitNum, _ := strconv.Atoi(limit)
 	skip := c.QueryParam("skip")
@@ -39,18 +38,18 @@ func (h *HttpUserHandler) FetchUser(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	listUser, nextSkip, err := h.UserUsecase.Fetch(ctx, limitNum, skipNum, sort)
+	listTransaction, nextSkip, err := h.TransactionUsecase.Fetch(ctx, limitNum, skipNum, sort)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	c.Response().Header().Set(`X-Skip`, strconv.Itoa(nextSkip))
-	return c.JSON(http.StatusOK, listUser)
+	return c.JSON(http.StatusOK, listTransaction)
 }
 
-func (h *HttpUserHandler) Store(c echo.Context) error {
-	var user models.User
-	err := c.Bind(&user)
+func (h *HttpTransactionHandler) Store(c echo.Context) error {
+	var transaction models.Transaction
+	err := c.Bind(&transaction)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -60,21 +59,21 @@ func (h *HttpUserHandler) Store(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	err = h.UserUsecase.Store(ctx, &user)
+	err = h.TransactionUsecase.Store(ctx, &transaction)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-	return c.JSON(http.StatusCreated, user)
+	return c.JSON(http.StatusCreated, transaction)
 }
 
-func (h *HttpUserHandler) GetByID(c echo.Context) error {
+func (h *HttpTransactionHandler) GetByID(c echo.Context) error {
 	requestId := c.Param("id")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	user, err := h.UserUsecase.GetByID(ctx, requestId)
+	user, err := h.TransactionUsecase.GetByID(ctx, requestId)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
