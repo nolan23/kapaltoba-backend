@@ -25,7 +25,7 @@ func NewTransactionHttpHandler(e *echo.Echo, ts transaction.Usecase) {
 	}
 	e.GET("/transactions", handler.FetchTransaction)
 	e.POST("/transaction", handler.Store)
-	e.GET("transaction/:id", handler.GetByID)
+	e.GET("/transaction/:id", handler.GetByID)
 }
 
 func (h *HttpTransactionHandler) FetchTransaction(c echo.Context) error {

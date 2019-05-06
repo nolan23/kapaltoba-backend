@@ -31,6 +31,7 @@ func (ts *transactionUsecase) Fetch(ctx context.Context, limit int, skip int, so
 	}
 	return listTransaction, nextSkip, nil
 }
+
 func (ts *transactionUsecase) GetByID(ctx context.Context, id string) (*models.Transaction, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
