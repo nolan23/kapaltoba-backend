@@ -14,5 +14,5 @@ type User struct {
 	BirthDate            time.Time   `bson:"birthdate" json:"birthdate"`
 	Password             string      `bson:"password" json:"password"`
 	ImageProfile         string      `bson:"imageprofile" json:"imageprofile"`
-	TripHistory          interface{} `bson:"triphistory" json:"triphistory" model:"Trip`
+	TripHistory          interface{} `bson:"triphistory" json:"triphistory" model:"Trip"`
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -24,7 +25,7 @@ import (
 var serverMongo = viper.GetString(`database.host`) + ":" + viper.GetString(`database.port`)
 var dbConfig = &mongodm.Config{
 	DatabaseHosts:    []string{"127.0.0.1:27017"},
-	DatabaseName:     viper.GetString(`database.name`),
+	DatabaseName:     "kapaltoba",
 	DatabaseUser:     viper.GetString(`database.user`),
 	DatabasePassword: viper.GetString(`database.pass`),
 	DatabaseSource:   "",
@@ -64,7 +65,21 @@ func main() {
 	transactionRepo := _transactionRepo.NewMongoDBTransactionRepository(con)
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	_transactionHttpDeliver.NewTransactionHttpHandler(e, transactionUsecase)
-
+	var trn *models.User
+	trn = &models.User{
+		Name:         "roby",
+		Email:        "test",
+		PhoneNumber:  "phone",
+		BirthDate:    time.Now(),
+		Password:     "test123",
+		ImageProfile: "imageprofile",
+		TripHistory:  nil,
+	}
+	err = userRepo.Store(context.Background(), trn)
+	fmt.Println("test")
+	if err != nil {
+		log.Println(err.Error())
+		fmt.Println("error saving " + err.Error())
+	}
 	e.Start(viper.GetString("server.address"))
-
 }
