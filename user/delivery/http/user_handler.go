@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -27,6 +28,7 @@ func NewUserHttpHandler(e *echo.Echo, us user.Usecase) {
 	e.GET("/users", handler.FetchUser)
 	e.POST("/user", handler.Store)
 	e.GET("user/:id", handler.GetByID)
+	e.GET("user/:id/trips", handler.GetTrips)
 }
 
 func (h *HttpUserHandler) FetchUser(c echo.Context) error {
@@ -80,6 +82,20 @@ func (h *HttpUserHandler) GetByID(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+func (h *HttpUserHandler) GetTrips(c echo.Context) error {
+	requestId := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	trips, err := h.UserUsecase.GetUserTrips(ctx, requestId)
+	if err != nil {
+		log.Println("error in get trips in user handler " + err.Error())
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, trips)
 }
 
 func getStatusCode(err error) int {

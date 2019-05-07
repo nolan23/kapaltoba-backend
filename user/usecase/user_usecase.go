@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -50,6 +51,30 @@ func (u *userUsecase) GetByUsername(ctx context.Context, username string) (*mode
 		return nil, err
 	}
 	return res, nil
+}
+
+func (u *userUsecase) GetUserTrips(ctx context.Context, id string) ([]*models.Trip, error) {
+	usr, err := u.GetByID(ctx, id)
+	if err != nil {
+		log.Println("error get user in get user trips usecase " + err.Error())
+		return nil, err
+	}
+	err = usr.Populate("TripHistory")
+	if err != nil {
+		log.Println("error populate trip history " + err.Error())
+		return nil, err
+	}
+	var userTrips []*models.Trip
+	if trips, ok := usr.TripHistory.([]*models.Trip); ok {
+		for _, trip := range trips {
+			userTrips = append(userTrips, trip)
+		}
+	} else {
+		log.Println("error type assertion get trip history in user usecase ")
+		return nil, nil
+	}
+
+	return userTrips, nil
 }
 
 func (u *userUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {

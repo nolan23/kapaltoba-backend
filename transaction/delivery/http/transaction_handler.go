@@ -2,8 +2,11 @@ package http
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
+
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -26,6 +29,8 @@ func NewTransactionHttpHandler(e *echo.Echo, ts transaction.Usecase) {
 	e.GET("/transactions", handler.FetchTransaction)
 	e.POST("/transaction", handler.Store)
 	e.GET("/transaction/:id", handler.GetByID)
+	e.PUT("/transaction/:id/pay", handler.Pay)
+	e.PUT("/transaction/:id/pay", handler.Cancel)
 }
 
 func (h *HttpTransactionHandler) FetchTransaction(c echo.Context) error {
@@ -79,6 +84,42 @@ func (h *HttpTransactionHandler) GetByID(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+func (h *HttpTransactionHandler) Pay(c echo.Context) error {
+
+	err := h.updateTransactionStatus(c, "lunas")
+	if err != nil {
+		log.Println("error update transaction to pay " + err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (h *HttpTransactionHandler) Cancel(c echo.Context) error {
+
+	err := h.updateTransactionStatus(c, "batal")
+	if err != nil {
+		log.Println("error update transaction to cancel " + err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (h *HttpTransactionHandler) updateTransactionStatus(c echo.Context, status string) error {
+	requestId := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		log.Println("not found transaction in update transaction status")
+		return nil
+	}
+	err := h.TransactionUsecase.Update(context.Background(), bson.M{"_id": bson.ObjectIdHex(requestId)}, bson.M{"$set": bson.M{"status": status}})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func getStatusCode(err error) int {
