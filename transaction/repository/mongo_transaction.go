@@ -45,7 +45,7 @@ func (m *mongoDBTransactionRepository) Fetch(ctx context.Context, limit int, ski
 func (m *mongoDBTransactionRepository) GetByID(ctx context.Context, id string) (*models.Transaction, error) {
 	Transaction := m.Conn.Model("Transaction")
 	transaction := &models.Transaction{}
-	err := Transaction.FindId(bson.ObjectIdHex(id)).Exec(transaction)
+	err := Transaction.FindId(bson.ObjectIdHex(id)).Populate("User", "Trip").Exec(transaction)
 	if _, ok := err.(*mongodm.NotFoundError); ok {
 		return nil, err
 	} else if err != nil {
@@ -58,7 +58,7 @@ func (m *mongoDBTransactionRepository) GetByUsername(ctx context.Context, userna
 	Transaction := m.Conn.Model("Transaction")
 	transactions := []*models.Transaction{}
 	returnedTransactions := []*models.Transaction{}
-	err := Transaction.Find(bson.M{"deleted": false}).Populate("User").Exec(transactions)
+	err := Transaction.Find(bson.M{"deleted": false}).Populate("User", "Trip").Exec(transactions)
 	if err != nil {
 		log.Fatal("error in get by username " + err.Error())
 		return nil, err

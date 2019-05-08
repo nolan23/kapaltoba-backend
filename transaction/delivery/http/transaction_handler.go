@@ -30,7 +30,7 @@ func NewTransactionHttpHandler(e *echo.Echo, ts transaction.Usecase) {
 	e.POST("/transaction", handler.Store)
 	e.GET("/transaction/:id", handler.GetByID)
 	e.PUT("/transaction/:id/pay", handler.Pay)
-	e.PUT("/transaction/:id/pay", handler.Cancel)
+	e.PUT("/transaction/:id/cancel", handler.Cancel)
 }
 
 func (h *HttpTransactionHandler) FetchTransaction(c echo.Context) error {
