@@ -21,7 +21,7 @@ func NewMongoDBTransactionRepository(Conn *mongodm.Connection) transaction.Repos
 func (m *mongoDBTransactionRepository) fetch(ctx context.Context, query interface{}, limit int, skip int, sort string) (res []*models.Transaction, nextSkip int, err error) {
 	Transaction := m.Conn.Model("Transaction")
 	transaction := []*models.Transaction{}
-	err = Transaction.Find(query).Sort(sort).Skip(skip).Limit(limit).Exec(&transaction)
+	err = Transaction.Find(query).Sort(sort).Skip(skip).Limit(limit).Populate("User", "Trip").Exec(&transaction)
 	if err != nil {
 		log.Fatal("error in find transaction " + err.Error())
 		return nil, skip + limit, err
