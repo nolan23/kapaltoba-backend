@@ -21,7 +21,7 @@ func NewMongoDBTripRepository(Conn *mongodm.Connection) trip.Repository {
 func (ts *mongoDBTripRepository) fetch(ctx context.Context, query interface{}, limit int, skip int, sort string) (res []*models.Trip, nextSkip int, err error) {
 	Trip := ts.Conn.Model("Trip")
 	trip := []*models.Trip{}
-	err = Trip.Find(query).Sort(sort).Skip(skip).Limit(limit).Exec(trip)
+	err = Trip.Find(query).Skip(skip).Limit(limit).Sort(sort).Exec(&trip)
 	if err != nil {
 		log.Println("error in find trip " + err.Error())
 		return nil, skip + limit, err

@@ -37,6 +37,8 @@ func (h *HttpTripHandler) FetchTrip(c echo.Context) error {
 	skip := c.QueryParam("skip")
 	skipNum, _ := strconv.Atoi(skip)
 	sort := c.QueryParam("sort")
+	log.Println("limitNum ", limitNum, " , skip = ", skipNum, " sort: ", sort)
+	fmt.Println("tests")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
