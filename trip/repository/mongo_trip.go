@@ -43,7 +43,8 @@ func (ts *mongoDBTripRepository) Fetch(ctx context.Context, limit int, skip int,
 func (ts *mongoDBTripRepository) GetByID(ctx context.Context, id string) (*models.Trip, error) {
 	Trip := ts.Conn.Model("Trip")
 	trip := &models.Trip{}
-	err := Trip.FindId(bson.ObjectIdHex(id)).Exec(trip)
+	err := Trip.FindId(bson.ObjectIdHex(id)).Populate("Passenger").Exec(trip)
+
 	if _, ok := err.(*mongodm.NotFoundError); ok {
 		log.Println("error in get id trip " + err.Error())
 		return nil, err
@@ -51,6 +52,9 @@ func (ts *mongoDBTripRepository) GetByID(ctx context.Context, id string) (*model
 		log.Println("another error in fetch trip " + err.Error())
 		return nil, err
 	}
+
+	log.Println("trip id ", trip.Id.Hex(), " punya pass ", len(trip.Passenger.([]*models.User)))
+
 	return trip, nil
 }
 func (ts *mongoDBTripRepository) Update(ctx context.Context, selector interface{}, update interface{}) error {
@@ -66,9 +70,14 @@ func (ts *mongoDBTripRepository) Store(ctx context.Context, trip *models.Trip) e
 	Trip := ts.Conn.Model("Trip")
 	Trip.New(trip)
 	err := trip.Save()
+
 	if err != nil {
 		log.Println("error in stre transaction " + err.Error())
 		return err
+	}
+	err = trip.Populate("Boat")
+	if err != nil {
+		log.Println("error populate trip store")
 	}
 	return nil
 }
@@ -83,4 +92,12 @@ func (ts *mongoDBTripRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return nil
+}
+
+func (ts *mongoDBTripRepository) AddPassenger(ctx context.Context, trip *models.Trip, passenger []*models.User) (*models.Trip, error) {
+	Trip := ts.Conn.Model("Trip")
+	Trip.New(trip)
+	trip.Passenger = passenger
+	log.Println("add passenger")
+	return trip, nil
 }

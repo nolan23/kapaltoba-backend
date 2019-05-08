@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"time"
@@ -17,6 +16,10 @@ import (
 	_transactionHttpDeliver "github.com/nolan23/kapaltoba-backend/transaction/delivery/http"
 	_transactionRepo "github.com/nolan23/kapaltoba-backend/transaction/repository"
 	_transactionUsecase "github.com/nolan23/kapaltoba-backend/transaction/usecase"
+
+	_tripHttpDeliver "github.com/nolan23/kapaltoba-backend/trip/delivery/http"
+	_tripRepo "github.com/nolan23/kapaltoba-backend/trip/repository"
+	_tripUsecase "github.com/nolan23/kapaltoba-backend/trip/usecase"
 
 	"github.com/spf13/viper"
 	"github.com/zebresel-com/mongodm"
@@ -65,21 +68,26 @@ func main() {
 	transactionRepo := _transactionRepo.NewMongoDBTransactionRepository(con)
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	_transactionHttpDeliver.NewTransactionHttpHandler(e, transactionUsecase)
-	var trn *models.User
-	trn = &models.User{
-		Name:         "roby",
-		Email:        "test",
-		PhoneNumber:  "phone",
-		BirthDate:    time.Now(),
-		Password:     "test123",
-		ImageProfile: "imageprofile",
-		TripHistory:  nil,
-	}
-	err = userRepo.Store(context.Background(), trn)
-	fmt.Println("test")
-	if err != nil {
-		log.Println(err.Error())
-		fmt.Println("error saving " + err.Error())
-	}
+
+	tripRepo := _tripRepo.NewMongoDBTripRepository(con)
+	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userUsecase, timeoutContext)
+	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase)
+	// var trn *models.User
+	// trn = &models.User{
+	// 	Name:         "roby",
+	// 	Email:        "test",
+	// 	PhoneNumber:  "phone",
+	// 	BirthDate:    time.Now(),
+	// 	Password:     "test123",
+	// 	ImageProfile: "imageprofile",
+	// 	TripHistory:  nil,
+	// }
+	// err = userRepo.Store(context.Background(), trn)
+	// fmt.Println("test")
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// 	fmt.Println("error saving " + err.Error())
+	// }
+
 	e.Start(viper.GetString("server.address"))
 }

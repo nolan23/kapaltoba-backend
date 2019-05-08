@@ -7,16 +7,19 @@ import (
 
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/trip"
+	"github.com/nolan23/kapaltoba-backend/user"
 )
 
 type tripUsecase struct {
 	tripRepo       trip.Repository
+	userUsecase    user.Usecase
 	contextTimeout time.Duration
 }
 
-func NewTripUsecase(t trip.Repository, timeout time.Duration) trip.Usecase {
+func NewTripUsecase(t trip.Repository, us user.Usecase, timeout time.Duration) trip.Usecase {
 	return &tripUsecase{
 		tripRepo:       t,
+		userUsecase:    us,
 		contextTimeout: timeout,
 	}
 }
@@ -56,13 +59,20 @@ func (ts *tripUsecase) Store(ctx context.Context, trip *models.Trip) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
 
-	err := ts.tripRepo.Store(ctx, trip)
+	user1, err := ts.userUsecase.GetByID(ctx, "5cd1678c8fe8bf55f239c3e1")
+	if err != nil {
+		log.Println("error get user in trip use case")
+	}
+	user2, _ := ts.userUsecase.GetByID(ctx, "5cd164d38fe8bf1b18cd5fe8")
+	trip, _ = ts.tripRepo.AddPassenger(ctx, trip, []*models.User{user1, user2})
+	err = ts.tripRepo.Store(ctx, trip)
 	if err != nil {
 		log.Println("error store trip usecase " + err.Error())
 		return err
 	}
 	return nil
 }
+
 func (ts *tripUsecase) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
@@ -74,7 +84,7 @@ func (ts *tripUsecase) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (ts *tripUsecase) GetPassenger(ctx context.Context, idTrip string) (passengers []*models.User, err error) {
+func (ts *tripUsecase) GetPassenger(ctx context.Context, idTrip string) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
 	trip, er := ts.GetByID(ctx, idTrip)
@@ -82,10 +92,8 @@ func (ts *tripUsecase) GetPassenger(ctx context.Context, idTrip string) (passeng
 		log.Println("error get passenger get id trip" + er.Error())
 		return nil, er
 	}
-	er = trip.Populate("Passenger")
-	if er != nil {
-		log.Println("error in populate Passenger " + er.Error())
-	}
+	var passengers []*models.User
+	log.Println("ukuran passenger ", len(trip.Passenger.([]*models.User)))
 	if users, ok := trip.Passenger.([]*models.User); ok {
 		for _, user := range users {
 			passengers = append(passengers, user)
@@ -93,5 +101,6 @@ func (ts *tripUsecase) GetPassenger(ctx context.Context, idTrip string) (passeng
 	} else {
 		log.Println("error type assertion get passenger trip usecase ")
 	}
+
 	return passengers, nil
 }

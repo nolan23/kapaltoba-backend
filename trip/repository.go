@@ -12,4 +12,5 @@ type Repository interface {
 	Update(ctx context.Context, selector interface{}, update interface{}) error
 	Store(ctx context.Context, trip *models.Trip) error
 	Delete(ctx context.Context, id string) error
+	AddPassenger(ctx context.Context, trip *models.Trip, passenger []*models.User) (*models.Trip, error)
 }

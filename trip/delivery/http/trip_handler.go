@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -25,7 +26,8 @@ func NewTripHttpHandler(e *echo.Echo, ts trip.Usecase) {
 		TripUsecase: ts,
 	}
 	e.GET("/trips", handler.FetchTrip)
-	e.GET("trip/:id/passengers", handler.GetPassenger)
+	e.POST("/trip", handler.Store)
+	e.GET("/trip/:id/passengers", handler.GetPassenger)
 
 }
 
@@ -60,6 +62,25 @@ func (h *HttpTripHandler) GetPassenger(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, passengers)
+}
+
+func (h *HttpTripHandler) Store(c echo.Context) error {
+	fmt.Println("you are here")
+	var trip models.Trip
+	err := c.Bind(&trip)
+	if err != nil {
+		fmt.Println("you are error " + err.Error())
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	err = h.TripUsecase.Store(ctx, &trip)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusCreated, trip)
 }
 
 func getStatusCode(err error) int {
