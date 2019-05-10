@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -34,6 +37,43 @@ var dbConfig = &mongodm.Config{
 	DatabaseSource:   "",
 }
 
+type jwtCusctomClaimns struct {
+	Name string `json:"name"`
+	Role string `json:"role"`
+	jwt.StandardClaims
+}
+
+func login(c echo.Context) error {
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+
+	if username != "roby" || password != "roby123" {
+		return echo.ErrUnauthorized
+	}
+	claims := &jwtCusctomClaimns{
+		"Roby",
+		"User",
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 36).Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	t, err := token.SignedString([]byte("rahasia"))
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": t,
+	})
+}
+
+func restricted(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwtCusctomClaimns)
+	name := claims.Name
+	return c.String(http.StatusOK, "welcome "+name)
+}
+
 func init() {
 	viper.SetConfigFile(`config.json`)
 	err := viper.ReadInConfig()
@@ -60,6 +100,15 @@ func main() {
 	defer con.Close()
 	e := echo.New()
 	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.POST("/login", login)
+	r := e.Group("/restricted")
+	config := middleware.JWTConfig{
+		Claims:     &jwtCusctomClaimns{},
+		SigningKey: []byte("rahasia"),
+	}
+	r.Use(middleware.JWTWithConfig(config))
+	r.GET("", restricted)
 	userRepo := _userRepo.NewMongoDBUserRepository(con)
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 	userUsecase := _userUsecase.NewUserUsecase(userRepo, timeoutContext)
