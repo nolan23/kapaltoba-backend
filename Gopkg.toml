@@ -24,3 +24,8 @@
 [[constraint]]
   name = "github.com/spf13/viper"
   version = "1.3.2"
+
+[metadata.heroku]
+  root-package = "github.com/nolan23/kapaltoba-backend"
+  go-version = "go1.11.5"
+  install = [ "./..." ]
