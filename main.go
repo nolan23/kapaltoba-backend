@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,9 +9,11 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/zebresel-com/mongodm"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
 
@@ -92,51 +95,51 @@ func main() {
 		DatabaseSource: "",
 	}
 
-	// client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-	// err = client.Connect(ctx)
-	// defer client.Disconnect(ctx)
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// err = client.Ping(ctx, nil)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
-
-	// // fmt.Println("Connected to MongoDB!")
-	// database := client.Database("heroku_3kddwkj9")
-	// collection := database.Collection("test")
-	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
-	// 5cd6604db38f65c477040246
-	// filter := bson.M{"_id": "5cd6604db38f65c477040246"}
-	// // _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
-	// var result struct {
-	// 	Name  string
-	// 	Value string
-	// }
-	// err = collection.FindOne(ctx, filter).Decode(&result)
-	// if err != nil {
-	// 	log.Println(err.Error())
-	// 	os.Exit(1)
-	// }
-	// log.Println(result.Name + " " + result.Value)
-	// log.Println("Connected to MongoDB!")
-
-	var con, err = mongodm.Connect(dbConfig)
+	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {
 		log.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err = client.Connect(ctx)
+	defer client.Disconnect(ctx)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	log.Println("Connected to MongoDB! 2")
-	con.Register(&models.User{}, "user")
+	// fmt.Println("Connected to MongoDB!")
+	database := client.Database("heroku_3kddwkj9")
+	collection := database.Collection("test")
+	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
+	// 5cd6604db38f65c477040246
+	filter := bson.M{"_id": bson.ObjectIdHex("5cd6604db38f65c477040246")}
+	// _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
+	var result struct {
+		Name  string
+		Value string
+	}
+	err = collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		log.Println(err.Error())
+		os.Exit(1)
+	}
+	log.Println(result.Name + " " + result.Value)
+	log.Println("Connected to MongoDB!")
+
+	// var con, err = mongodm.Connect(dbConfig)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// 	os.Exit(1)
+	// }
+
+	// log.Println("Connected to MongoDB! 2")
+	// con.Register(&models.User{}, "user")
 	// con.Register(&models.Transaction{}, "transaction")
 	// con.Register(&models.Trip{}, "trip")
 	// con.Register(&models.Boat{}, "boat")
