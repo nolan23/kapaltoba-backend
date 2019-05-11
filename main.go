@@ -179,7 +179,7 @@ func main() {
 	port, ok := os.LookupEnv("PORT")
 
 	if ok == false {
-		port = "3000"
+		port = ""
 	}
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
