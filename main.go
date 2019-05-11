@@ -10,6 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mgo "gopkg.in/mgo.v2"
@@ -117,7 +118,11 @@ func main() {
 	collection := database.Collection("test")
 	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
 	// 5cd6604db38f65c477040246
-	filter := bson.M{"_id": bson.M{"$oid": "5cd6604db38f65c477040246"}}
+	oid, erId := primitive.ObjectIDFromHex("5cd6604db38f65c477040246")
+	if erId != nil {
+		log.Println(erId.Error())
+	}
+	filter := bson.M{"_id": oid}
 	// _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
 	var result struct {
 		Name  string
