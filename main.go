@@ -121,11 +121,19 @@ func main() {
 	database := client.Database("heroku_3kddwkj9")
 	collection := database.Collection("test")
 	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
-	_, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
+	// 5cd6604db38f65c477040246
+	filter := bson.D{{"_id", "5cd6604db38f65c477040246"}}
+	// _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
+	var result struct {
+		Name  string
+		Value string
+	}
+	err = collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		log.Println(err.Error())
 		os.Exit(1)
 	}
+	log.Println(result.Name + " " + result.Value)
 	log.Println("Connected to MongoDB!")
 
 	// var con, err = mongodm.Connect(dbConfig)
