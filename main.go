@@ -118,7 +118,7 @@ func main() {
 	}
 
 	// fmt.Println("Connected to MongoDB!")
-	database := client.Database("kapaltoba")
+	database := client.Database("heroku_3kddwkj9")
 	collection := database.Collection("test")
 	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
 	_, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
