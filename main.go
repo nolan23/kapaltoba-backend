@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/zebresel-com/mongodm"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mgo "gopkg.in/mgo.v2"
@@ -90,10 +89,10 @@ func init() {
 }
 
 func main() {
-	dbConfig := &mongodm.Config{
-		DialInfo:       dialInfo,
-		DatabaseSource: "",
-	}
+	// dbConfig := &mongodm.Config{
+	// 	DialInfo:       dialInfo,
+	// 	DatabaseSource: "",
+	// }
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {
