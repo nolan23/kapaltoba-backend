@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
 
@@ -115,14 +116,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Connected to MongoDB!")
-	// database := client.Database("kapaltoba")
-	// collection := database.Collection("test")
-	// _, err = collection.InsertOne(context.Background(), bson.D{{"foo", "bar"}})
-	// if err != nil {
-	// 	log.Println(err.Error())
-	// }
-	// log.Println("Connected to MongoDB!")
+	// fmt.Println("Connected to MongoDB!")
+	database := client.Database("kapaltoba")
+	collection := database.Collection("test")
+	_, err = collection.InsertOne(context.Background(), bson.D{{"foo", "bar"}})
+	if err != nil {
+		log.Println(err.Error())
+		os.Exit(1)
+	}
+	log.Println("Connected to MongoDB!")
 
 	// var con, err = mongodm.Connect(dbConfig)
 	// if err != nil {
