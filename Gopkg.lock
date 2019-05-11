@@ -14,6 +14,18 @@
   version = "v1.4.7"
 
 [[projects]]
+  name = "github.com/go-stack/stack"
+  packages = ["."]
+  revision = "2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a"
+  version = "v1.8.0"
+
+[[projects]]
+  name = "github.com/golang/snappy"
+  packages = ["."]
+  revision = "2a8bb927dd31d8daada140a5d09578521ce5c36a"
+  version = "v0.0.1"
+
+[[projects]]
   name = "github.com/hashicorp/hcl"
   packages = [".","hcl/ast","hcl/parser","hcl/printer","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
   revision = "8cb6e5b959231cc1119e43259c4a608f9c51a241"
@@ -27,13 +39,13 @@
 
 [[projects]]
   name = "github.com/labstack/echo"
-  packages = [".","middleware"]
+  packages = ["."]
   revision = "38772c686c76b501f94bd6cd5b77f5842e93b559"
   version = "v3.3.10"
 
 [[projects]]
   name = "github.com/labstack/gommon"
-  packages = ["bytes","color","log","random"]
+  packages = ["color","log"]
   revision = "7fd9f68ece0bcb1a905fac8f1549f0083f71c51b"
   version = "v0.2.8"
 
@@ -116,15 +128,33 @@
   version = "v1.0.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/xdg/scram"
+  packages = ["."]
+  revision = "7eeb5667e42c09cb51bf7b7c28aea8c56767da90"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/xdg/stringprep"
+  packages = ["."]
+  revision = "73f8eece6fdcd902c185bf651de50f3828bed5ed"
+
+[[projects]]
   name = "github.com/zebresel-com/mongodm"
   packages = ["."]
   revision = "cbfd0891ca28de93d3abd48626da2fe84f62644f"
   version = "v2.0.1"
 
 [[projects]]
+  name = "go.mongodb.org/mongo-driver"
+  packages = ["bson","bson/bsoncodec","bson/bsonrw","bson/bsontype","bson/primitive","event","internal","mongo","mongo/options","mongo/readconcern","mongo/readpref","mongo/writeconcern","tag","version","x/bsonx","x/bsonx/bsoncore","x/mongo/driver","x/mongo/driver/auth","x/mongo/driver/auth/internal/gssapi","x/mongo/driver/session","x/mongo/driver/topology","x/mongo/driver/uuid","x/network/address","x/network/command","x/network/compressor","x/network/connection","x/network/connstring","x/network/description","x/network/result","x/network/wiremessage"]
+  revision = "fd38aea397a6b7fdd52b5528e4cfd683821e7b39"
+  version = "v1.0.1"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["acme","acme/autocert"]
+  packages = ["acme","acme/autocert","pbkdf2"]
   revision = "d864b10871cd4370fe574816b489c819c675ccc7"
 
 [[projects]]
@@ -132,6 +162,12 @@
   name = "golang.org/x/net"
   packages = ["idna"]
   revision = "afe8014c977f78fe2406743d9d32c8bd44d0542b"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sync"
+  packages = ["semaphore"]
+  revision = "112230192c580c3556b8cee6403af37a4fc5f28c"
 
 [[projects]]
   branch = "master"
@@ -160,6 +196,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7e898f00fef852c58427576d681a0d463dc1ef86f9a2b280d8305466432f8bf9"
+  inputs-digest = "4c6acd678151c207026668c9234a2255f463fb703edf200b8bb65165d4c676dc"
   solver-name = "gps-cdcl"
   solver-version = 1

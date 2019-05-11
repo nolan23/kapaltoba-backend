@@ -9,8 +9,8 @@
     "database": {
         "host": "127.0.0.1",
         "port": "27017",
-        "user": "",
-        "pass": "",
+        "user": "roby",
+        "pass": "roby_is_the_best",
         "name": "kapaltoba"
     }
   
