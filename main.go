@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
 
@@ -117,7 +117,7 @@ func main() {
 	collection := database.Collection("test")
 	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
 	// 5cd6604db38f65c477040246
-	filter := bson.D{{"_id", bson.ObjectIdHex("5cd6604db38f65c477040246")}}
+	filter := bson.M{"_id": bson.M{"$oid": "5cd6604db38f65c477040246"}}
 	// _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
 	var result struct {
 		Name  string
