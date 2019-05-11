@@ -1,1 +1,1 @@
-web: gomongohq
+web: bin/kapaltoba-backend
