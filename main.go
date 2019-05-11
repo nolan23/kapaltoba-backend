@@ -8,11 +8,12 @@ import (
 	"os"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
+
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
 
@@ -119,7 +120,8 @@ func main() {
 	// fmt.Println("Connected to MongoDB!")
 	database := client.Database("kapaltoba")
 	collection := database.Collection("test")
-	_, err = collection.InsertOne(context.Background(), bson.D{{"foo", "bar"}})
+	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
+	_, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
 	if err != nil {
 		log.Println(err.Error())
 		os.Exit(1)
