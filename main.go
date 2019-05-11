@@ -117,7 +117,7 @@ func main() {
 	collection := database.Collection("test")
 	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
 	// 5cd6604db38f65c477040246
-	filter := bson.M{"_id": bson.ObjectIdHex("5cd6604db38f65c477040246")}
+	filter := bson.D{{"_id", bson.ObjectIdHex("5cd6604db38f65c477040246")}}
 	// _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
 	var result struct {
 		Name  string
