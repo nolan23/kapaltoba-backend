@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"github.com/labstack/echo"
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/transaction"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ResponseError struct {
@@ -110,13 +110,19 @@ func (h *HttpTransactionHandler) Cancel(c echo.Context) error {
 
 func (h *HttpTransactionHandler) updateTransactionStatus(c echo.Context, status string) error {
 	requestId := c.Param("id")
+	oid, err := primitive.ObjectIDFromHex(requestId)
+	if err != nil {
+		log.Println("error in handler " + err.Error())
+		return err
+	}
 	ctx := c.Request().Context()
 	if ctx == nil {
 		log.Println("not found transaction in update transaction status")
 		return nil
 	}
-	err := h.TransactionUsecase.Update(context.Background(), bson.M{"_id": bson.ObjectIdHex(requestId)}, bson.M{"$set": bson.M{"status": status}})
+	err = h.TransactionUsecase.Update(context.Background(), bson.M{"_id": oid}, bson.M{"$set": bson.M{"status": status}})
 	if err != nil {
+		log.Println("error update handler " + err.Error())
 		return err
 	}
 	return nil

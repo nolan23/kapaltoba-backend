@@ -13,6 +13,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
+	_transactionHttpDeliver "github.com/nolan23/kapaltoba-backend/transaction/delivery/http"
+	_transactionRepo "github.com/nolan23/kapaltoba-backend/transaction/repository"
+	_transactionUsecase "github.com/nolan23/kapaltoba-backend/transaction/usecase"
+
 	"github.com/labstack/echo"
 
 	"github.com/spf13/viper"
@@ -157,7 +161,7 @@ func main() {
 	// con.Register(&models.Boat{}, "boat")
 
 	// defer con.Close()
-	// e := echo.New()
+	e := echo.New()
 	// e.Use(middleware.Logger())
 	// e.Use(middleware.Recover())
 	// e.POST("/login", login)
@@ -169,13 +173,13 @@ func main() {
 	// r.Use(middleware.JWTWithConfig(config))
 	// r.GET("", restricted)
 	// userRepo := _userRepo.NewMongoDBUserRepository(con)
-	// timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
+	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 	// userUsecase := _userUsecase.NewUserUsecase(userRepo, timeoutContext)
 	// _userHttpDeliver.NewUserHttpHandler(e, userUsecase)
 
-	// transactionRepo := _transactionRepo.NewMongoDBTransactionRepository(con)
-	// transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
-	// _transactionHttpDeliver.NewTransactionHttpHandler(e, transactionUsecase)
+	transactionRepo := _transactionRepo.NewMongoTransactionRepository(database, "transaction")
+	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
+	_transactionHttpDeliver.NewTransactionHttpHandler(e, transactionUsecase)
 
 	// tripRepo := _tripRepo.NewMongoDBTripRepository(con)
 	// tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userUsecase, timeoutContext)
@@ -203,7 +207,6 @@ func main() {
 	if ok == false {
 		port = "3000"
 	}
-	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
