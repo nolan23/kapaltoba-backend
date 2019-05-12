@@ -13,7 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	mgo "gopkg.in/mgo.v2"
 
 	"github.com/labstack/echo"
 
@@ -23,7 +22,7 @@ import (
 var serverMongo = viper.GetString(`database.host`) + ":" + viper.GetString(`database.port`)
 var mongoURI = "mongodb+srv://roby:roby_is_the_best@cluster0-ld8yy.mongodb.net"
 var mongoOld = "mongodb://roby:roby_is_the_best@cluster0-shard-00-00-ld8yy.mongodb.net:27017,cluster0-shard-00-01-ld8yy.mongodb.net:27017,cluster0-shard-00-02-ld8yy.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true"
-var dialInfo, err = mgo.ParseURL(os.Getenv("MONGODB_URI"))
+var uri string
 
 // var dbConfig = &mongodm.Config{
 // 	DatabaseHosts:    []string{"mongodb://cluster0-shard-00-00-ld8yy.mongodb.net.:27017"},
@@ -89,13 +88,22 @@ func init() {
 
 }
 
+func init() {
+	var ok bool
+	uri, ok = os.LookupEnv("MONGODB_URI")
+	if !ok {
+		uri = viper.GetString("database.uri")
+	}
+
+}
+
 func main() {
 	// dbConfig := &mongodm.Config{
 	// 	DialInfo:       dialInfo,
 	// 	DatabaseSource: "",
 	// }
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
+	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatal(err)
 	}
