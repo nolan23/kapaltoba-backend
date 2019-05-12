@@ -84,25 +84,25 @@ func (m *mongoDBTransactionRepository) Update(ctx context.Context, selector inte
 }
 
 func (m *mongoDBTransactionRepository) Store(ctx context.Context, transaction *models.Transaction) error {
-	Transaction := m.Conn.Model("Transaction")
-	Transaction.New(transaction)
-	err := transaction.Save()
-	if err != nil {
-		log.Fatal("error in stre transaction " + err.Error())
-		return err
-	}
+	// Transaction := m.Conn.Model("Transaction")
+	// Transaction.New(transaction)
+	// err := transaction.Save()
+	// if err != nil {
+	// 	log.Fatal("error in stre transaction " + err.Error())
+	// 	return err
+	// }
 	return nil
 }
 
 func (m *mongoDBTransactionRepository) Delete(ctx context.Context, id string) error {
-	transaction, err := m.GetByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	err = transaction.Delete()
-	if err != nil {
-		log.Fatal("error in delete transaction ")
-		return err
-	}
+	// transaction, err := m.GetByID(ctx, id)
+	// if err != nil {
+	// 	return err
+	// }
+	// err = transaction.Delete()
+	// if err != nil {
+	// 	log.Fatal("error in delete transaction ")
+	// 	return err
+	// }
 	return nil
 }
