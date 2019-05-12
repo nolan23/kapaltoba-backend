@@ -9,10 +9,9 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
 
@@ -102,8 +101,9 @@ func main() {
 	// 	DialInfo:       dialInfo,
 	// 	DatabaseSource: "",
 	// }
-
+	uri = "mongodb://roby:roby123@localhost:27017/?authSource=admin"
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,27 +121,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	// fmt.Println("Connected to MongoDB!")
-	database := client.Database("heroku_3kddwkj9")
+	fmt.Println("Connected to MongoDB!")
+	database := client.Database(viper.GetString("database.namedev"))
 	collection := database.Collection("test")
-	// _, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
+	_, err = collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
 	// 5cd6604db38f65c477040246
-	oid, erId := primitive.ObjectIDFromHex("5cd6604db38f65c477040246")
-	if erId != nil {
-		log.Println(erId.Error())
-	}
-	filter := bson.M{"_id": oid}
+	// oid, erId := primitive.ObjectIDFromHex("5cd6604db38f65c477040246")
+	// if erId != nil {
+	// 	log.Println(erId.Error())
+	// }
+	// filter := bson.M{"_id": oid}
 	// _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
-	var result struct {
-		Name  string
-		Value string
-	}
-	err = collection.FindOne(ctx, filter).Decode(&result)
+	// var result struct {
+	// 	Name  string
+	// 	Value string
+	// }
+	// err = collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		log.Println(err.Error())
 		os.Exit(1)
 	}
-	log.Println(result.Name + " " + result.Value)
+	// log.Println(result.Name + " " + result.Value)
 	log.Println("Connected to MongoDB!")
 
 	// var con, err = mongodm.Connect(dbConfig)

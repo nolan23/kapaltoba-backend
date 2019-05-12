@@ -11,7 +11,7 @@
     "port": "27017",
     "user": "roby",
     "pass": "roby_is_the_best",
-    "name": "kapaltoba",
-    "uri" : "mongodb://heroku_3kddwkj9:n5pbnu82tvv72tq5u85vqe6p9k@ds155086.mlab.com:55086/heroku_3kddwkj9"
+    "namedev": "kapaltoba",
+    "nameprod": "heroku_3kddwkj9"
   }
 }
