@@ -11,12 +11,19 @@ import (
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/trip"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type ResponseError struct {
 	Message string `json:"message"`
+}
+
+type ReturnTrip struct {
+	Trip      *models.Trip
+	Kapten    string   `json:"kapten"`
+	AnakKapal []string `json:"anakkapal"`
+	NamaKapal string   `json:"namakapal"`
 }
 
 type HttpTripHandler struct {
@@ -51,6 +58,7 @@ func (h *HttpTripHandler) FetchTrip(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	c.Response().Header().Set(`X-Skip`, strconv.Itoa(nextSkip))
+
 	return c.JSON(http.StatusOK, listTrip)
 }
 

@@ -113,7 +113,7 @@ func main() {
 	// 	DialInfo:       dialInfo,
 	// 	DatabaseSource: "",
 	// }
-	uri = "mongodb://roby:roby123@localhost:27017/?authSource=admin"
+	// uri = "mongodb://roby:roby123@localhost:27017/?authSource=admin"
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 
 	if err != nil {
@@ -134,7 +134,7 @@ func main() {
 	}
 
 	fmt.Println("Connected to MongoDB!")
-	database := client.Database(viper.GetString("database.namedev"))
+	database := client.Database(viper.GetString("database.nameprod"))
 	collection := database.Collection("test")
 	_, err = collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
 	// 5cd6604db38f65c477040246
