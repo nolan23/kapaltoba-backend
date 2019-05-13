@@ -54,6 +54,14 @@ func (m *mongoDBTransactionRepository) GetByID(ctx context.Context, id string) (
 	return transaction, nil
 }
 
+func (m *mongoDBTransactionRepository) GetByUserId(ctx context.Context, userId string) (*models.Transaction, error) {
+	return nil, nil
+}
+
+func (m *mongoDBTransactionRepository) GetByTripId(ctx context.Context, tripId string) (*models.Transaction, error) {
+	return nil, nil
+}
+
 func (m *mongoDBTransactionRepository) GetByUsername(ctx context.Context, username string) ([]*models.Transaction, error) {
 	Transaction := m.Conn.Model("Transaction")
 	transactions := []*models.Transaction{}

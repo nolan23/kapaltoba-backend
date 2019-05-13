@@ -39,7 +39,6 @@ func (m *mongoTransactionRepository) fetch(ctx context.Context, query interface{
 	}
 	var resu []*models.Transaction
 	for cur.Next(ctx) {
-		log.Println("masuk sinis")
 		tr := &models.Transaction{}
 		err = cur.Decode(tr)
 		if err != nil {
@@ -52,7 +51,10 @@ func (m *mongoTransactionRepository) fetch(ctx context.Context, query interface{
 
 func (m *mongoTransactionRepository) Fetch(ctx context.Context, limit int, skip int, sort string) (res []*models.Transaction, nextSkip int, err error) {
 	query := bson.M{"deleted": false}
-	bsonSort := bson.M{"modifiedAt": 1}
+	if sort == "" {
+		sort = "modifiedAt"
+	}
+	bsonSort := bson.M{sort: 1}
 	trans, next, err := m.fetch(ctx, query, limit, skip, bsonSort)
 	if err != nil {
 		log.Println("fetch trans " + err.Error())
@@ -60,25 +62,63 @@ func (m *mongoTransactionRepository) Fetch(ctx context.Context, limit int, skip 
 	}
 	return trans, next, nil
 }
-func (m *mongoTransactionRepository) GetByID(ctx context.Context, id string) (*models.Transaction, error) {
+
+func (m *mongoTransactionRepository) fetchOne(ctx context.Context, query interface{}) (*models.Transaction, error) {
 	var result models.Transaction
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		log.Println("error convert to ObjectID " + err.Error())
-	}
-	filter := bson.D{{"_id", oid}}
-	err = m.DB.Collection(m.collectionName).FindOne(ctx, filter).Decode(&result)
+	err := m.DB.Collection(m.collectionName).FindOne(ctx, query).Decode(&result)
 	if err != nil {
 		log.Println("error find by id " + err.Error())
 		return nil, err
 	}
 	return &result, nil
 }
+func (m *mongoTransactionRepository) GetByID(ctx context.Context, id string) (*models.Transaction, error) {
+	var result *models.Transaction
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Println("error convert to ObjectID " + err.Error())
+	}
+	filter := bson.D{{"_id", oid}}
+	result, err = m.fetchOne(ctx, filter)
+	if err != nil {
+		log.Println("error find by id " + err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
+func (m *mongoTransactionRepository) GetByUserId(ctx context.Context, userId string) (*models.Transaction, error) {
+	filter := bson.D{{"user", userId}}
+	result, err := m.fetchOne(ctx, filter)
+	if err != nil {
+		log.Println("error find by user " + err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
+func (m *mongoTransactionRepository) GetByTripId(ctx context.Context, tripId string) (*models.Transaction, error) {
+	filter := bson.D{{"trip", tripId}}
+	result, err := m.fetchOne(ctx, filter)
+	if err != nil {
+		log.Println("error find by trip " + err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
 func (m *mongoTransactionRepository) GetByUsername(ctx context.Context, username string) ([]*models.Transaction, error) {
 	return nil, nil
 }
 func (m *mongoTransactionRepository) Update(ctx context.Context, selector interface{}, update interface{}) error {
+
 	updateResult, err := m.DB.Collection(m.collectionName).UpdateOne(ctx, selector, update)
+	if err != nil {
+		log.Println("error update transaction " + err.Error())
+		return err
+	}
+	log.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	updateResult, err = m.DB.Collection(m.collectionName).UpdateOne(ctx, selector, bson.M{"$set": bson.M{"modifiedAt": time.Now()}})
 	if err != nil {
 		log.Println("error update transaction " + err.Error())
 		return err
@@ -86,7 +126,9 @@ func (m *mongoTransactionRepository) Update(ctx context.Context, selector interf
 	log.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 	return nil
 }
+
 func (m *mongoTransactionRepository) Store(ctx context.Context, transaction *models.Transaction) error {
+	transaction.ID = primitive.NewObjectID()
 	transaction.Deleted = false
 	transaction.CreatedAt = time.Now()
 	transaction.ModifiedAt = time.Now()
@@ -95,7 +137,7 @@ func (m *mongoTransactionRepository) Store(ctx context.Context, transaction *mod
 		log.Println("error store transaction " + err.Error())
 		return err
 	}
-	log.Println("Inserted multiple documents: ", insertResult.InsertedID)
+	log.Println("Inserted  document: ", insertResult.InsertedID)
 	return nil
 }
 
@@ -107,7 +149,7 @@ func (m *mongoTransactionRepository) Delete(ctx context.Context, id string) erro
 	filter := bson.D{{"_id", oid}}
 	update := bson.D{
 		{"$set", bson.D{
-			{"deleted", false},
+			{"deleted", true},
 			{"modifiedAt", time.Now()},
 		}},
 	}
