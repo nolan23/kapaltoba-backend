@@ -13,9 +13,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
+	_userHttpDeliver "github.com/nolan23/kapaltoba-backend/user/delivery/http"
+	_userRepo "github.com/nolan23/kapaltoba-backend/user/repository"
+	_userUsecase "github.com/nolan23/kapaltoba-backend/user/usecase"
+
 	_transactionHttpDeliver "github.com/nolan23/kapaltoba-backend/transaction/delivery/http"
 	_transactionRepo "github.com/nolan23/kapaltoba-backend/transaction/repository"
 	_transactionUsecase "github.com/nolan23/kapaltoba-backend/transaction/usecase"
+
+	_tripHttpDeliver "github.com/nolan23/kapaltoba-backend/trip/delivery/http"
+	_tripRepo "github.com/nolan23/kapaltoba-backend/trip/repository"
+	_tripUsecase "github.com/nolan23/kapaltoba-backend/trip/usecase"
 
 	"github.com/labstack/echo"
 
@@ -172,18 +180,19 @@ func main() {
 	// }
 	// r.Use(middleware.JWTWithConfig(config))
 	// r.GET("", restricted)
-	// userRepo := _userRepo.NewMongoDBUserRepository(con)
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
-	// userUsecase := _userUsecase.NewUserUsecase(userRepo, timeoutContext)
-	// _userHttpDeliver.NewUserHttpHandler(e, userUsecase)
-
+	userRepo := _userRepo.NewMongoUserRepository(database, "user")
+	tripRepo := _tripRepo.NewMongoTripRepository(database, "trip")
 	transactionRepo := _transactionRepo.NewMongoTransactionRepository(database, "transaction")
+
+	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, timeoutContext)
+	_userHttpDeliver.NewUserHttpHandler(e, userUsecase)
+
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	_transactionHttpDeliver.NewTransactionHttpHandler(e, transactionUsecase)
 
-	// tripRepo := _tripRepo.NewMongoDBTripRepository(con)
-	// tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userUsecase, timeoutContext)
-	// _tripHttpDeliver.NewTripHttpHandler(e, tripUsecase)
+	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, timeoutContext)
+	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase)
 	// var trn *models.User
 	// trn = &models.User{
 	// 	Name:         "roby",
