@@ -43,6 +43,29 @@ func (ts *transactionUsecase) GetByID(ctx context.Context, id string) (*models.T
 	}
 	return res, nil
 }
+
+func (ts *transactionUsecase) GetByUserId(ctx context.Context, userId string) (*models.Transaction, error) {
+	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
+	defer cancel()
+
+	res, err := ts.transRepo.GetByUserId(ctx, userId)
+	if err != nil {
+		log.Println("error getByUserId transaction usecase " + err.Error())
+		return nil, err
+	}
+	return res, nil
+}
+func (ts *transactionUsecase) GetByTripId(ctx context.Context, tripId string) (*models.Transaction, error) {
+	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
+	defer cancel()
+
+	res, err := ts.transRepo.GetByTripId(ctx, tripId)
+	if err != nil {
+		log.Println("error getByTripId transaction usecase " + err.Error())
+		return nil, err
+	}
+	return res, nil
+}
 func (ts *transactionUsecase) GetByUsername(ctx context.Context, username string) ([]*models.Transaction, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()

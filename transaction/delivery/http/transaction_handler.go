@@ -31,6 +31,8 @@ func NewTransactionHttpHandler(e *echo.Echo, ts transaction.Usecase) {
 	e.GET("/transaction/:id", handler.GetByID)
 	e.PUT("/transaction/:id/pay", handler.Pay)
 	e.PUT("/transaction/:id/cancel", handler.Cancel)
+	e.GET("/transaction/user/:id", handler.GetByUserID)
+	e.GET("/transaction/trip/:id", handler.GetByTripId)
 }
 
 func (h *HttpTransactionHandler) FetchTransaction(c echo.Context) error {
@@ -79,6 +81,34 @@ func (h *HttpTransactionHandler) GetByID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	user, err := h.TransactionUsecase.GetByID(ctx, requestId)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, user)
+}
+
+func (h *HttpTransactionHandler) GetByUserID(c echo.Context) error {
+	requestId := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	user, err := h.TransactionUsecase.GetByUserId(ctx, requestId)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, user)
+}
+
+func (h *HttpTransactionHandler) GetByTripId(c echo.Context) error {
+	requestId := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	user, err := h.TransactionUsecase.GetByTripId(ctx, requestId)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
