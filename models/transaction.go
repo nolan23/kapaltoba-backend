@@ -12,6 +12,6 @@ type Transaction struct {
 	Trip       interface{}        `json:"trip" bson:"trip" model:"Trip"`
 	Status     string             `json:"status" bson:"status"`
 	CreatedAt  time.Time          `json:"createdAt" bson:"createdAt"`
-	ModifiedAt time.Time          `json:"ModifiedAt" bson:"modifiedAt"`
+	ModifiedAt time.Time          `json:"modifiedAt" bson:"modifiedAt"`
 	Deleted    bool               `json:"deleted" bson:"deleted"`
 }
