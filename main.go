@@ -25,6 +25,10 @@ import (
 	_tripRepo "github.com/nolan23/kapaltoba-backend/trip/repository"
 	_tripUsecase "github.com/nolan23/kapaltoba-backend/trip/usecase"
 
+	_boatHttpDeliver "github.com/nolan23/kapaltoba-backend/boat/delivery/http"
+	_boatRepo "github.com/nolan23/kapaltoba-backend/boat/repository"
+	_boatUsecase "github.com/nolan23/kapaltoba-backend/boat/usecase"
+
 	"github.com/labstack/echo"
 
 	"github.com/spf13/viper"
@@ -183,6 +187,7 @@ func main() {
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 	userRepo := _userRepo.NewMongoUserRepository(database, "user")
 	tripRepo := _tripRepo.NewMongoTripRepository(database, "trip")
+	boatRepo := _boatRepo.NewMongoBoatRepository(database, "boat")
 	transactionRepo := _transactionRepo.NewMongoTransactionRepository(database, "transaction")
 
 	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, transactionRepo, timeoutContext)
@@ -193,6 +198,9 @@ func main() {
 
 	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, timeoutContext)
 	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase)
+
+	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, timeoutContext)
+	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
 	// var trn *models.User
 	// trn = &models.User{
 	// 	Name:         "roby",
