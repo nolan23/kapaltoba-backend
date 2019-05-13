@@ -185,7 +185,7 @@ func main() {
 	tripRepo := _tripRepo.NewMongoTripRepository(database, "trip")
 	transactionRepo := _transactionRepo.NewMongoTransactionRepository(database, "transaction")
 
-	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, timeoutContext)
+	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, transactionRepo, timeoutContext)
 	_userHttpDeliver.NewUserHttpHandler(e, userUsecase)
 
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
