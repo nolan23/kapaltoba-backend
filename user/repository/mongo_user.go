@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -68,36 +67,36 @@ func (m *mongoDBUserRepository) GetByUsername(ctx context.Context, username stri
 	return user, nil
 }
 func (m *mongoDBUserRepository) Update(ctx context.Context, selector interface{}, update interface{}) error {
-	User := m.Conn.Model("User")
-	err := User.Update(selector, update)
-	if err != nil {
-		log.Fatal("error " + err.Error())
-		return err
-	}
+	// User := m.Conn.Model("User")
+	// err := User.Update(selector, update)
+	// if err != nil {
+	// 	log.Fatal("error " + err.Error())
+	// 	return err
+	// }
 	return nil
 }
 func (m *mongoDBUserRepository) Store(ctx context.Context, user *models.User) error {
-	User := m.Conn.Model("User")
-	User.New(user)
-	err := user.Save()
-	if err != nil {
-		fmt.Println("error " + err.Error())
-		return err
-	}
+	// User := m.Conn.Model("User")
+	// User.New(user)
+	// err := user.Save()
+	// if err != nil {
+	// 	fmt.Println("error " + err.Error())
+	// 	return err
+	// }
 
 	return nil
 }
 func (m *mongoDBUserRepository) Delete(ctx context.Context, id string) error {
-	user, err := m.GetByID(ctx, id)
-	if err != nil {
-		log.Fatal("error when get user by id")
-		return err
-	}
-	err = user.Delete()
-	if err != nil {
-		log.Fatal("error when delete post")
-		return err
-	}
+	// user, err := m.GetByID(ctx, id)
+	// if err != nil {
+	// 	log.Fatal("error when get user by id")
+	// 	return err
+	// }
+	// err = user.Delete()
+	// if err != nil {
+	// 	log.Fatal("error when delete post")
+	// 	return err
+	// }
 	return nil
 
 }

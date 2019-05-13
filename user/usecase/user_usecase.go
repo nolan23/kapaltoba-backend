@@ -5,18 +5,22 @@ import (
 	"log"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/trip"
+
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/user"
 )
 
 type userUsecase struct {
 	userRepo       user.Repository
+	tripRepo       trip.Repository
 	contextTimeout time.Duration
 }
 
-func NewUserUsecase(a user.Repository, timeout time.Duration) user.Usecase {
+func NewUserUsecase(a user.Repository, tr trip.Repository, timeout time.Duration) user.Usecase {
 	return &userUsecase{
 		userRepo:       a,
+		tripRepo:       tr,
 		contextTimeout: timeout,
 	}
 }
@@ -59,19 +63,16 @@ func (u *userUsecase) GetUserTrips(ctx context.Context, id string) ([]*models.Tr
 		log.Println("error get user in get user trips usecase " + err.Error())
 		return nil, err
 	}
-	err = usr.Populate("TripHistory")
-	if err != nil {
-		log.Println("error populate trip history " + err.Error())
-		return nil, err
+	if usr.TripHistory == nil {
+		return nil, nil
 	}
 	var userTrips []*models.Trip
-	if trips, ok := usr.TripHistory.([]*models.Trip); ok {
-		for _, trip := range trips {
-			userTrips = append(userTrips, trip)
+	for _, trip := range usr.TripHistory.([]string) {
+		userTrip, err := u.tripRepo.GetByID(ctx, trip)
+		if err != nil {
+			log.Println("error get user in trip usecase " + err.Error())
 		}
-	} else {
-		log.Println("error type assertion get trip history in user usecase ")
-		return nil, nil
+		userTrips = append(userTrips, userTrip)
 	}
 
 	return userTrips, nil
@@ -92,6 +93,7 @@ func (u *userUsecase) Store(ctx context.Context, user *models.User) error {
 	defer cancel()
 	err := u.userRepo.Store(ctx, user)
 	if err != nil {
+		log.Println("error store user usecase " + err.Error())
 		return err
 	}
 	return nil
@@ -102,6 +104,7 @@ func (u *userUsecase) Delete(ctx context.Context, id string) error {
 	defer cancel()
 	err := u.userRepo.Delete(ctx, id)
 	if err != nil {
+		log.Println("error delete user usecase " + err.Error())
 		return err
 	}
 	return nil
