@@ -14,7 +14,7 @@ type Trip struct {
 	Time        time.Time          `json:"time" bson:"time"`
 	Status      string             `json:"status" bson:"status"`
 	Price       float64            `json:"price" bson:"price"`
-	Duration    string             `json:"duration" bson:"duration"`
+	Duration    time.Duration      `json:"duration" bson:"duration"`
 	Available   int                `json:"available" bson:"available"`
 	Purchased   int                `json:"purchased" bson:"purchased"`
 	Passengers  interface{}        `json:"passengers" bson:"passengers" relation:"1n" model:"User"`
