@@ -8,18 +8,19 @@ import (
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/trip"
 	"github.com/nolan23/kapaltoba-backend/user"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type tripUsecase struct {
 	tripRepo       trip.Repository
-	userUsecase    user.Usecase
+	userRepo       user.Repository
 	contextTimeout time.Duration
 }
 
-func NewTripUsecase(t trip.Repository, us user.Usecase, timeout time.Duration) trip.Usecase {
+func NewTripUsecase(t trip.Repository, us user.Repository, timeout time.Duration) trip.Usecase {
 	return &tripUsecase{
 		tripRepo:       t,
-		userUsecase:    us,
+		userRepo:       us,
 		contextTimeout: timeout,
 	}
 }
@@ -45,27 +46,22 @@ func (ts *tripUsecase) GetByID(ctx context.Context, id string) (*models.Trip, er
 	}
 	return res, nil
 }
-func (ts *tripUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {
+func (ts *tripUsecase) Update(ctx context.Context, selector interface{}, update *models.Trip) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
-	err := ts.tripRepo.Update(ctx, selector, update)
+	update.ModifiedAt = time.Now()
+	err := ts.tripRepo.Update(ctx, selector, bson.M{"$set": &update})
 	if err != nil {
 		log.Println("error update trip usecase " + err.Error())
 		return err
 	}
 	return nil
 }
+
 func (ts *tripUsecase) Store(ctx context.Context, trip *models.Trip) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
-
-	user1, err := ts.userUsecase.GetByID(ctx, "5cd1678c8fe8bf55f239c3e1")
-	if err != nil {
-		log.Println("error get user in trip use case")
-	}
-	user2, _ := ts.userUsecase.GetByID(ctx, "5cd164d38fe8bf1b18cd5fe8")
-	trip, _ = ts.tripRepo.AddPassenger(ctx, trip, []*models.User{user1, user2})
-	err = ts.tripRepo.Store(ctx, trip)
+	err := ts.tripRepo.Store(ctx, trip)
 	if err != nil {
 		log.Println("error store trip usecase " + err.Error())
 		return err
@@ -84,7 +80,7 @@ func (ts *tripUsecase) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (ts *tripUsecase) GetPassenger(ctx context.Context, idTrip string) ([]*models.User, error) {
+func (ts *tripUsecase) GetPassengers(ctx context.Context, idTrip string) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
 	trip, er := ts.GetByID(ctx, idTrip)
@@ -93,14 +89,31 @@ func (ts *tripUsecase) GetPassenger(ctx context.Context, idTrip string) ([]*mode
 		return nil, er
 	}
 	var passengers []*models.User
-	log.Println("ukuran passenger ", len(trip.Passenger.([]*models.User)))
-	if users, ok := trip.Passenger.([]*models.User); ok {
-		for _, user := range users {
-			passengers = append(passengers, user)
+
+	for _, user := range trip.Passengers.([]string) {
+		passenger, err := ts.userRepo.GetByID(ctx, user)
+		if err != nil {
+			log.Println("error get user in trip usecase " + err.Error())
 		}
-	} else {
-		log.Println("error type assertion get passenger trip usecase ")
+		passengers = append(passengers, passenger)
 	}
 
 	return passengers, nil
+}
+
+func (ts *tripUsecase) AddPassenger(ctx context.Context, selector interface{}, trip *models.Trip, passengerId string) (*models.Trip, error) {
+	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
+	defer cancel()
+	trip.Passengers = append(trip.Passengers.([]string), passengerId)
+	if trip.Available == 0 {
+		return nil, nil
+	}
+	trip.Available = trip.Available - 1
+	trip.Purchased = trip.Purchased + 1
+	err := ts.Update(ctx, selector, trip)
+	if err != nil {
+		log.Println("error in update " + err.Error())
+		return nil, err
+	}
+	return trip, nil
 }

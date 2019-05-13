@@ -11,6 +11,8 @@ import (
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/trip"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type ResponseError struct {
@@ -28,6 +30,7 @@ func NewTripHttpHandler(e *echo.Echo, ts trip.Usecase) {
 	e.GET("/trips", handler.FetchTrip)
 	e.POST("/trip", handler.Store)
 	e.GET("/trip/:id/passengers", handler.GetPassenger)
+	e.PUT("/trip/edit/:id", handler.EditTrip)
 
 }
 
@@ -38,7 +41,6 @@ func (h *HttpTripHandler) FetchTrip(c echo.Context) error {
 	skipNum, _ := strconv.Atoi(skip)
 	sort := c.QueryParam("sort")
 	log.Println("limitNum ", limitNum, " , skip = ", skipNum, " sort: ", sort)
-	fmt.Println("tests")
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -58,7 +60,7 @@ func (h *HttpTripHandler) GetPassenger(c echo.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	passengers, err := h.TripUsecase.GetPassenger(ctx, tripId)
+	passengers, err := h.TripUsecase.GetPassengers(ctx, tripId)
 	if err != nil {
 		log.Println("error get passenger trip handler " + err.Error())
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
@@ -79,6 +81,32 @@ func (h *HttpTripHandler) Store(c echo.Context) error {
 		ctx = context.Background()
 	}
 	err = h.TripUsecase.Store(ctx, &trip)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusCreated, trip)
+}
+
+func (h *HttpTripHandler) EditTrip(c echo.Context) error {
+	requestId := c.Param("id")
+	oid, err := primitive.ObjectIDFromHex(requestId)
+	if err != nil {
+		log.Println("error in handler " + err.Error())
+		return err
+	}
+	var trip models.Trip
+	err = c.Bind(&trip)
+	if err != nil {
+		fmt.Println("you are error " + err.Error())
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	// bson.M{"boat": trip.Boat, "origin": trip.Origin, "destination": trip.Destination}
+	trip.ID = oid
+	err = h.TripUsecase.Update(ctx, bson.M{"_id": oid}, &trip)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

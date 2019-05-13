@@ -15,7 +15,7 @@ type mongoDBTripRepository struct {
 }
 
 func NewMongoDBTripRepository(Conn *mongodm.Connection) trip.Repository {
-	return &mongoDBTripRepository{Conn}
+	return nil
 }
 
 func (ts *mongoDBTripRepository) fetch(ctx context.Context, query interface{}, limit int, skip int, sort string) (res []*models.Trip, nextSkip int, err error) {
@@ -53,7 +53,7 @@ func (ts *mongoDBTripRepository) GetByID(ctx context.Context, id string) (*model
 		return nil, err
 	}
 
-	log.Println("trip id ", trip.Id.Hex(), " punya pass ", len(trip.Passenger.([]*models.User)))
+	// log.Println("trip id ", trip.Id.Hex(), " punya pass ", len(trip.Passenger.([]*models.User)))
 
 	return trip, nil
 }
@@ -67,37 +67,37 @@ func (ts *mongoDBTripRepository) Update(ctx context.Context, selector interface{
 	return nil
 }
 func (ts *mongoDBTripRepository) Store(ctx context.Context, trip *models.Trip) error {
-	Trip := ts.Conn.Model("Trip")
-	Trip.New(trip)
-	err := trip.Save()
+	// Trip := ts.Conn.Model("Trip")
+	// Trip.New(trip)
+	// err := trip.Save()
 
-	if err != nil {
-		log.Println("error in stre transaction " + err.Error())
-		return err
-	}
-	err = trip.Populate("Boat")
-	if err != nil {
-		log.Println("error populate trip store")
-	}
+	// if err != nil {
+	// 	log.Println("error in stre transaction " + err.Error())
+	// 	return err
+	// }
+	// err = trip.Populate("Boat")
+	// if err != nil {
+	// 	log.Println("error populate trip store")
+	// }
 	return nil
 }
 func (ts *mongoDBTripRepository) Delete(ctx context.Context, id string) error {
-	trip, err := ts.GetByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	err = trip.Delete()
-	if err != nil {
-		log.Fatal("error in delete transaction ")
-		return err
-	}
+	// trip, err := ts.GetByID(ctx, id)
+	// if err != nil {
+	// 	return err
+	// }
+	// err = trip.Delete()
+	// if err != nil {
+	// 	log.Fatal("error in delete transaction ")
+	// 	return err
+	// }
 	return nil
 }
 
-func (ts *mongoDBTripRepository) AddPassenger(ctx context.Context, trip *models.Trip, passenger []*models.User) (*models.Trip, error) {
-	Trip := ts.Conn.Model("Trip")
-	Trip.New(trip)
-	trip.Passenger = passenger
-	log.Println("add passenger")
-	return trip, nil
+func (ts *mongoDBTripRepository) AddPassengers(ctx context.Context, trip *models.Trip, passengers []*models.User) (*models.Trip, error) {
+	// Trip := ts.Conn.Model("Trip")
+	// Trip.New(trip)
+	// trip.Passengers = passengers
+	// log.Println("add passenger")
+	return nil, nil
 }
