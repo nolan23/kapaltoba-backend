@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/transaction"
 	"github.com/nolan23/kapaltoba-backend/trip"
 
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -14,13 +15,15 @@ import (
 type userUsecase struct {
 	userRepo       user.Repository
 	tripRepo       trip.Repository
+	transRepo      transaction.Repository
 	contextTimeout time.Duration
 }
 
-func NewUserUsecase(a user.Repository, tr trip.Repository, timeout time.Duration) user.Usecase {
+func NewUserUsecase(a user.Repository, tr trip.Repository, trr transaction.Repository, timeout time.Duration) user.Usecase {
 	return &userUsecase{
 		userRepo:       a,
 		tripRepo:       tr,
+		transRepo:      trr,
 		contextTimeout: timeout,
 	}
 }
@@ -76,6 +79,27 @@ func (u *userUsecase) GetUserTrips(ctx context.Context, id string) ([]*models.Tr
 	}
 
 	return userTrips, nil
+}
+
+func (u *userUsecase) GetTransactions(ctx context.Context, id string) ([]*models.Transaction, error) {
+	usr, err := u.GetByID(ctx, id)
+	if err != nil {
+		log.Println("error get user in get user trips usecase " + err.Error())
+		return nil, err
+	}
+	if usr.Transactions == nil {
+		return nil, nil
+	}
+	var transactions []*models.Transaction
+	for _, t := range usr.Transactions.([]string) {
+		transaction, err := u.transRepo.GetByID(ctx, t)
+		if err != nil {
+			log.Println("error get user in trip usecase " + err.Error())
+		}
+		transactions = append(transactions, transaction)
+	}
+
+	return transactions, nil
 }
 
 func (u *userUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {
