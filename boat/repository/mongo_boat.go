@@ -65,25 +65,25 @@ func (m *mongoDBBoatRepository) Update(ctx context.Context, selector interface{}
 }
 
 func (m *mongoDBBoatRepository) Store(ctx context.Context, boat *models.Boat) error {
-	Boat := m.Conn.Model("Boat")
-	Boat.New(boat)
-	err := boat.Save()
-	if err != nil {
-		log.Fatal("error in stre boat " + err.Error())
-		return err
-	}
+	// Boat := m.Conn.Model("Boat")
+	// Boat.New(boat)
+	// err := boat.Save()
+	// if err != nil {
+	// 	log.Fatal("error in stre boat " + err.Error())
+	// 	return err
+	// }
 	return nil
 }
 
 func (m *mongoDBBoatRepository) Delete(ctx context.Context, id string) error {
-	boat, err := m.GetByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	err = boat.Delete()
-	if err != nil {
-		log.Fatal("error in delete boat ")
-		return err
-	}
+	// boat, err := m.GetByID(ctx, id)
+	// if err != nil {
+	// 	return err
+	// }
+	// err = boat.Delete()
+	// if err != nil {
+	// 	log.Fatal("error in delete boat ")
+	// 	return err
+	// }
 	return nil
 }
