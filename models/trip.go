@@ -17,7 +17,7 @@ type Trip struct {
 	Duration    string             `json:"duration" bson:"duration"`
 	Available   int                `json:"available" bson:"available"`
 	Purchased   int                `json:"purchased" bson:"purchased"`
-	Passenger   interface{}        `json:"passenger" bson:"passenger" relation:"1n" model:"User"`
+	Passengers  interface{}        `json:"passengers" bson:"passengers" relation:"1n" model:"User"`
 	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
 	ModifiedAt  time.Time          `json:"modifiedAt" bson:"modifiedAt"`
 	Deleted     bool               `json:"deleted" bson:"deleted"`
