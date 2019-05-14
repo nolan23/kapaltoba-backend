@@ -58,6 +58,7 @@ func (h *HttpTransactionHandler) Store(c echo.Context) error {
 	var transaction models.Transaction
 	err := c.Bind(&transaction)
 	if err != nil {
+
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 

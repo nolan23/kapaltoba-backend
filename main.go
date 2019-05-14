@@ -113,11 +113,7 @@ func init() {
 }
 
 func main() {
-	// dbConfig := &mongodm.Config{
-	// 	DialInfo:       dialInfo,
-	// 	DatabaseSource: "",
-	// }
-	// uri = "mongodb://roby:roby123@localhost:27017/?authSource=admin"
+	uri = "mongodb://roby:roby123@localhost:27017/?authSource=admin"
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 
 	if err != nil {
@@ -138,41 +134,14 @@ func main() {
 	}
 
 	fmt.Println("Connected to MongoDB!")
-	database := client.Database(viper.GetString("database.nameprod"))
+	database := client.Database(viper.GetString("database.namedev"))
 	collection := database.Collection("test")
 	_, err = collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
-	// 5cd6604db38f65c477040246
-	// oid, erId := primitive.ObjectIDFromHex("5cd6604db38f65c477040246")
-	// if erId != nil {
-	// 	log.Println(erId.Error())
-	// }
-	// filter := bson.M{"_id": oid}
-	// _, err = collection.InsertOne(ctx, bson.M{"name": "test", "value": "test"})
-	// var result struct {
-	// 	Name  string
-	// 	Value string
-	// }
-	// err = collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		log.Println(err.Error())
 		os.Exit(1)
 	}
-	// log.Println(result.Name + " " + result.Value)
 	log.Println("Connected to MongoDB!")
-
-	// var con, err = mongodm.Connect(dbConfig)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	os.Exit(1)
-	// }
-
-	// log.Println("Connected to MongoDB! 2")
-	// con.Register(&models.User{}, "user")
-	// con.Register(&models.Transaction{}, "transaction")
-	// con.Register(&models.Trip{}, "trip")
-	// con.Register(&models.Boat{}, "boat")
-
-	// defer con.Close()
 	e := echo.New()
 	// e.Use(middleware.Logger())
 	// e.Use(middleware.Recover())
@@ -201,24 +170,6 @@ func main() {
 
 	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, timeoutContext)
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
-	// var trn *models.User
-	// trn = &models.User{
-	// 	Name:         "roby",
-	// 	Email:        "test",
-	// 	PhoneNumber:  "phone",
-	// 	BirthDate:    time.Now(),
-	// 	Password:     "test123",
-	// 	ImageProfile: "imageprofile",
-	// 	TripHistory:  nil,
-	// }
-	// err = userRepo.Store(context.Background(), trn)
-	// fmt.Println("test")
-	// if err != nil {
-	// 	log.Println(err.Error())
-	// 	fmt.Println("error saving " + err.Error())
-	// }
-
-	// e.Start(viper.GetString("server.address"))
 	port, ok := os.LookupEnv("PORT")
 
 	if ok == false {
