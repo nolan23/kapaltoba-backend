@@ -8,6 +8,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/labstack/echo/middleware"
+	"github.com/nolan23/kapaltoba-backend/credentials/delivery/handler"
+
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -143,6 +146,12 @@ func main() {
 	}
 	log.Println("Connected to MongoDB!")
 	e := echo.New()
+	r := e.Group("")
+	config := middleware.JWTConfig{
+		Claims:     &handler.JwtCustomClaims{},
+		SigningKey: []byte(viper.GetString("jwt.key")),
+	}
+	r.Use(middleware.JWTWithConfig(config))
 	// e.Use(middleware.Logger())
 	// e.Use(middleware.Recover())
 	// e.POST("/login", login)
@@ -163,13 +172,15 @@ func main() {
 	_userHttpDeliver.NewUserHttpHandler(e, userUsecase)
 
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
-	_transactionHttpDeliver.NewTransactionHttpHandler(e, transactionUsecase)
+	_transactionHttpDeliver.NewTransactionHttpHandler(r, transactionUsecase)
 
 	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, timeoutContext)
 	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase)
 
 	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, timeoutContext)
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
+
+	handler.NewCredentialsHttpHandler(e)
 	port, ok := os.LookupEnv("PORT")
 
 	if ok == false {

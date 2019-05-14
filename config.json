@@ -13,5 +13,9 @@
     "pass": "roby_is_the_best",
     "namedev": "kapaltoba",
     "nameprod": "heroku_3kddwkj9"
+  },
+  "jwt":{
+    "private":"secret",
+    "public":"key"
   }
 }

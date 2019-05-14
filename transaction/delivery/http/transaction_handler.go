@@ -22,7 +22,7 @@ type HttpTransactionHandler struct {
 	TransactionUsecase transaction.Usecase
 }
 
-func NewTransactionHttpHandler(e *echo.Echo, ts transaction.Usecase) {
+func NewTransactionHttpHandler(e *echo.Group, ts transaction.Usecase) {
 	handler := &HttpTransactionHandler{
 		TransactionUsecase: ts,
 	}
