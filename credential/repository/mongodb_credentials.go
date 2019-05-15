@@ -7,9 +7,9 @@ import (
 
 	"github.com/nolan23/kapaltoba-backend/credential"
 	"github.com/nolan23/kapaltoba-backend/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoCredentialRepository struct {

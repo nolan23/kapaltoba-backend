@@ -1,4 +1,4 @@
-package handler
+package http
 
 import (
 	"context"
@@ -65,18 +65,18 @@ func (h *HttpCredentialHandler) SignIn(c echo.Context) error {
 		log.Println(err)
 		return c.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
 	}
-	tokenString, err := credential.GenerateJWT(cred.Username, cred.Role)
+	tokenString, err := credential.GenerateJWT(credAux.Username, credAux.Role)
 	if err != nil {
 		log.Println(err)
 		return c.JSON(http.StatusForbidden, ResponseError{Message: err.Error()})
 	}
 
-	authCookie := http.Cookie{
-		Name:     "AuthToken",
-		Value:    tokenString,
-		HttpOnly: true,
-	}
-	c.SetCookie(&authCookie)
+	// authCookie := http.Cookie{
+	// 	Name:     "AuthToken",
+	// 	Value:    tokenString,
+	// 	HttpOnly: true,
+	// }
+	// c.SetCookie(&authCookie)
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"token": tokenString,
@@ -104,10 +104,10 @@ func (h *HttpCredentialHandler) SignUp(c echo.Context) error {
 	var credAux *models.Credential
 	credAux, err = h.CredentialUsecase.GetByUsername(ctx, cred.Username)
 
-	if err != nil {
-		log.Println(err)
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
-	}
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+	// }
 	if credAux != nil {
 		if cred.Username == credAux.Username {
 			log.Println(fmt.Sprintf("Username %s already exists.", cred.Username))
@@ -157,16 +157,16 @@ func NullifyTokenCookies(c echo.Context) (string, error) {
 
 func (h *HttpCredentialHandler) SignOut(c echo.Context) error {
 
-	jti, err := NullifyTokenCookies(c)
-	if err == http.ErrNoCookie {
-		log.Println("No User logged in.")
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: "No User logged in."})
-	}
+	// jti, err := NullifyTokenCookies(c)
+	// if err == http.ErrNoCookie {
+	// 	log.Println("No User logged in.")
+	// 	return c.JSON(http.StatusBadRequest, ResponseError{Message: "No User logged in."})
+	// }
 
-	if err != nil {
-		log.Println(err)
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
-	}
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+	// }
 
-	return c.JSON(http.StatusOK, ResponseError{Message: "User " + jti + " has been logged out"})
+	return c.JSON(http.StatusOK, ResponseError{Message: "User  has been logged out"})
 }

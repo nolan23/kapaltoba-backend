@@ -2,6 +2,7 @@ package credential
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -21,8 +22,10 @@ var (
 )
 var jwtWhiteList map[string]string
 
-func InitializeKeys() {
+func Init() {
+	log.Println("set private key ")
 	privateKey = viper.GetString("jwt.private")
+	log.Println("set private key " + privateKey)
 	publicKey = viper.GetString("jwt.public")
 	jwtWhiteList = make(map[string]string)
 }
@@ -51,7 +54,7 @@ func GenerateJWT(username string, role string) (string, error) {
 		RevokeJWT(username)
 	}
 
-	claims := models.Claims{
+	claims := &models.Claims{
 		Username: username,
 		Role:     role,
 		StandardClaims: jwt.StandardClaims{
@@ -59,11 +62,10 @@ func GenerateJWT(username string, role string) (string, error) {
 		},
 	}
 
-	// Create a RSA 256 signer.
-	signer := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	signer := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := signer.SignedString(privateKey)
-
+	tokenString, err := signer.SignedString([]byte(privateKey))
+	log.Println("generate with private key " + privateKey)
 	if err != nil {
 		return "", err
 	}
