@@ -76,7 +76,7 @@ func (m *mongoBoatRepository) GetByID(ctx context.Context, id string) (*models.B
 	if err != nil {
 		log.Println("error convert to ObjectID " + err.Error())
 	}
-	filter := bson.D{{"_id", oid}}
+	filter := bson.M{"_id": oid}
 	result, err = m.fetchOne(ctx, filter)
 	if err != nil {
 		log.Println("error find by id " + err.Error())

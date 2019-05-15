@@ -16,11 +16,12 @@ type boatUsecase struct {
 
 func NewBoatUsecase(t boat.Repository, timeout time.Duration) boat.Usecase {
 	return &boatUsecase{
+		boatRepo:t,
 		contextTimeout: timeout,
 	}
 }
 
-func (ts *boatUsecase) Fetch(ctx context.Context, limit int, skip int, sort string) (res []*models.Boat, nextSkip int, err error) {
+func (ts *boatUsecase) Fetch(ctx context.Context, limit int, skip int, sort string) ([]*models.Boat, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
 	listBoat, nextSkip, err := ts.boatRepo.Fetch(ctx, limit, skip, sort)
