@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/nolan23/kapaltoba-backend/credential"
+	"github.com/nolan23/kapaltoba-backend/user"
 
 	"github.com/labstack/echo"
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -19,11 +20,13 @@ type ResponseError struct {
 
 type HttpCredentialHandler struct {
 	CredentialUsecase credential.Usecase
+	UserUsecase       user.Usecase
 }
 
-func NewCredentialsHttpHandler(e *echo.Echo, credentialUsecase credential.Usecase) {
+func NewCredentialsHttpHandler(e *echo.Echo, credentialUsecase credential.Usecase, userUsecase user.Usecase) {
 	handler := &HttpCredentialHandler{
 		CredentialUsecase: credentialUsecase,
+		UserUsecase:       userUsecase,
 	}
 	e.POST("/signin", handler.SignIn)
 	e.POST("/signup", handler.SignUp)
@@ -71,12 +74,12 @@ func (h *HttpCredentialHandler) SignIn(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, ResponseError{Message: err.Error()})
 	}
 
-	// authCookie := http.Cookie{
-	// 	Name:     "AuthToken",
-	// 	Value:    tokenString,
-	// 	HttpOnly: true,
-	// }
-	// c.SetCookie(&authCookie)
+	authCookie := http.Cookie{
+		Name:     "AuthToken",
+		Value:    tokenString,
+		HttpOnly: true,
+	}
+	c.SetCookie(&authCookie)
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"token": tokenString,
@@ -84,16 +87,16 @@ func (h *HttpCredentialHandler) SignIn(c echo.Context) error {
 }
 
 func (h *HttpCredentialHandler) SignUp(c echo.Context) error {
-	var cred models.Credential
-	err := c.Bind(&cred)
+	var reg models.Register
+	err := c.Bind(&reg)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
-	if cred.Username == "" {
+	if reg.Username == "" {
 		log.Println("Username is required")
 		return c.JSON(http.StatusBadRequest, ResponseError{Message: "Username is required"})
 	}
-	if cred.Password == "" {
+	if reg.Password == "" {
 		log.Println("Password is required")
 		return c.JSON(http.StatusBadRequest, ResponseError{Message: "Password is required"})
 	}
@@ -102,26 +105,41 @@ func (h *HttpCredentialHandler) SignUp(c echo.Context) error {
 		ctx = context.Background()
 	}
 	var credAux *models.Credential
-	credAux, err = h.CredentialUsecase.GetByUsername(ctx, cred.Username)
+	credAux, err = h.CredentialUsecase.GetByUsername(ctx, reg.Username)
 
 	// if err != nil {
 	// 	log.Println(err)
 	// 	return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
 	// }
 	if credAux != nil {
-		if cred.Username == credAux.Username {
-			log.Println(fmt.Sprintf("Username %s already exists.", cred.Username))
+		if reg.Username == credAux.Username {
+			log.Println(fmt.Sprintf("Username %s already exists.", reg.Username))
 			return c.JSON(http.StatusBadRequest, ResponseError{Message: "Username already exists"})
 		}
 	}
-	hashedPassword, err := credential.GenerateHashedPassword(cred.Password)
+	hashedPassword, err := credential.GenerateHashedPassword(reg.Password)
 	if err != nil {
 		log.Println(err)
 		return c.JSON(http.StatusForbidden, ResponseError{Message: "Password generation failed"})
 	}
-
-	cred.Password = string(hashedPassword)
-	err = h.CredentialUsecase.Store(ctx, &cred)
+	credAux = &models.Credential{
+		Username: reg.Username,
+		Password: reg.Password,
+		Role:     reg.Role,
+	}
+	credAux.Username = reg.Username
+	credAux.Password = string(hashedPassword)
+	credAux.Role = reg.Role
+	insertedId, err := h.CredentialUsecase.Store(ctx, credAux)
+	if err != nil {
+		log.Println(err)
+		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+	}
+	user := &models.User{}
+	user.Name = reg.Name
+	user.Email = reg.Email
+	user.Credential = insertedId
+	err = h.UserUsecase.Store(ctx, user)
 	if err != nil {
 		log.Println(err)
 		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
@@ -157,16 +175,16 @@ func NullifyTokenCookies(c echo.Context) (string, error) {
 
 func (h *HttpCredentialHandler) SignOut(c echo.Context) error {
 
-	// jti, err := NullifyTokenCookies(c)
-	// if err == http.ErrNoCookie {
-	// 	log.Println("No User logged in.")
-	// 	return c.JSON(http.StatusBadRequest, ResponseError{Message: "No User logged in."})
-	// }
+	jti, err := NullifyTokenCookies(c)
+	if err == http.ErrNoCookie {
+		log.Println("No User logged in.")
+		return c.JSON(http.StatusBadRequest, ResponseError{Message: "No User logged in."})
+	}
 
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
-	// }
+	if err != nil {
+		log.Println(err)
+		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+	}
 
-	return c.JSON(http.StatusOK, ResponseError{Message: "User  has been logged out"})
+	return c.JSON(http.StatusOK, ResponseError{Message: "User " + jti + " has been logged out"})
 }

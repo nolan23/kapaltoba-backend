@@ -187,7 +187,7 @@ func main() {
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
 
 	credentialUsecase := _credentialUsecase.NewCredentialUsecase(credentialRepo, timeoutContext)
-	_credentialHttpDeliver.NewCredentialsHttpHandler(e, credentialUsecase)
+	_credentialHttpDeliver.NewCredentialsHttpHandler(e, credentialUsecase, userUsecase)
 
 	port, ok := os.LookupEnv("PORT")
 

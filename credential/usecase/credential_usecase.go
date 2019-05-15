@@ -52,16 +52,16 @@ func (cs *credentialUsecase) Update(ctx context.Context, selector interface{}, u
 	}
 	return nil
 }
-func (cs *credentialUsecase) Store(ctx context.Context, transaction *models.Credential) error {
+func (cs *credentialUsecase) Store(ctx context.Context, transaction *models.Credential) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, cs.contextTimeout)
 	defer cancel()
 
-	err := cs.credentialRepo.Store(ctx, transaction)
+	insertedId, err := cs.credentialRepo.Store(ctx, transaction)
 	if err != nil {
 		log.Println("error store transaction usecase " + err.Error())
-		return err
+		return "", err
 	}
-	return nil
+	return insertedId, nil
 }
 func (cs *credentialUsecase) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, cs.contextTimeout)

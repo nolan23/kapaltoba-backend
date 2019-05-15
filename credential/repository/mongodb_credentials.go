@@ -64,7 +64,7 @@ func (m *mongoCredentialRepository) Update(ctx context.Context, selector interfa
 	log.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 	return nil
 }
-func (m *mongoCredentialRepository) Store(ctx context.Context, credential *models.Credential) error {
+func (m *mongoCredentialRepository) Store(ctx context.Context, credential *models.Credential) (string, error) {
 	credential.ID = primitive.NewObjectID()
 	credential.Deleted = false
 	credential.CreatedAt = time.Now()
@@ -72,10 +72,12 @@ func (m *mongoCredentialRepository) Store(ctx context.Context, credential *model
 	insertResult, err := m.DB.Collection(m.collectionName).InsertOne(ctx, credential)
 	if err != nil {
 		log.Println("error store credential " + err.Error())
-		return err
+		return "", err
 	}
-	log.Println("Inserted  document: ", insertResult.InsertedID)
-	return nil
+
+	log.Println("Inserted credential document: ", insertResult.InsertedID.(primitive.ObjectID).Hex())
+
+	return insertResult.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 func (m *mongoCredentialRepository) Delete(ctx context.Context, id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
