@@ -13,5 +13,6 @@ type Usecase interface {
 	Store(ctx context.Context, trip *models.Trip) error
 	Delete(ctx context.Context, id string) error
 	GetPassengers(ctx context.Context, idTrip string) (passengers []*models.User, err error)
+	GetBoat(ctx context.Context, idBoat string) (boat *models.Boat, err error)
 	AddPassenger(ctx context.Context, selector interface{}, trip *models.Trip, passengerId string) (*models.Trip, error)
 }

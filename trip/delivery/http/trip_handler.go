@@ -20,10 +20,10 @@ type ResponseError struct {
 }
 
 type ReturnTrip struct {
-	Trip      *models.Trip
-	Kapten    string   `json:"kapten"`
-	AnakKapal []string `json:"anakkapal"`
-	NamaKapal string   `json:"namakapal"`
+	Trip      *models.Trip `json:"trip"`
+	Kapten    string       `json:"kapten"`
+	AnakKapal []string     `json:"anakkapal"`
+	NamaKapal string       `json:"namakapal"`
 }
 
 type HttpTripHandler struct {
@@ -53,13 +53,30 @@ func (h *HttpTripHandler) FetchTrip(c echo.Context) error {
 		ctx = context.Background()
 	}
 	listTrip, nextSkip, err := h.TripUsecase.Fetch(ctx, limitNum, skipNum, sort)
+	var returnTrip []*ReturnTrip
 
+	for _, trip := range listTrip {
+		ret := &ReturnTrip{}
+		ret.Trip = trip
+		if trip.Boat != nil {
+			idBoat := trip.Boat.(string)
+			boat, er := h.TripUsecase.GetBoat(ctx, idBoat)
+			if er != nil {
+				log.Println("error get boat " + er.Error())
+			}
+			ret.NamaKapal = boat.BoatName
+			ret.Kapten = boat.Captain
+			ret.AnakKapal = boat.ViceCaptains
+		}
+
+		returnTrip = append(returnTrip, ret)
+	}
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	c.Response().Header().Set(`X-Skip`, strconv.Itoa(nextSkip))
 
-	return c.JSON(http.StatusOK, listTrip)
+	return c.JSON(http.StatusOK, returnTrip)
 }
 
 func (h *HttpTripHandler) GetPassenger(c echo.Context) error {

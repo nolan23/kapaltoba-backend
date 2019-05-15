@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/boat"
+
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/trip"
 	"github.com/nolan23/kapaltoba-backend/user"
@@ -14,13 +16,15 @@ import (
 type tripUsecase struct {
 	tripRepo       trip.Repository
 	userRepo       user.Repository
+	boatRepo       boat.Repository
 	contextTimeout time.Duration
 }
 
-func NewTripUsecase(t trip.Repository, us user.Repository, timeout time.Duration) trip.Usecase {
+func NewTripUsecase(t trip.Repository, us user.Repository, br boat.Repository, timeout time.Duration) trip.Usecase {
 	return &tripUsecase{
 		tripRepo:       t,
 		userRepo:       us,
+		boatRepo:       br,
 		contextTimeout: timeout,
 	}
 }
@@ -78,6 +82,18 @@ func (ts *tripUsecase) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return nil
+}
+
+func (ts *tripUsecase) GetBoat(ctx context.Context, idBoat string) (boat *models.Boat, err error) {
+	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
+	defer cancel()
+	log.Println("id " + idBoat)
+	boat, err = ts.boatRepo.GetByID(ctx, idBoat)
+	if err != nil {
+		log.Println("error getboat trip usecase " + err.Error())
+		return nil, err
+	}
+	return boat, nil
 }
 
 func (ts *tripUsecase) GetPassengers(ctx context.Context, idTrip string) ([]*models.User, error) {
