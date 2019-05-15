@@ -16,7 +16,7 @@ type boatUsecase struct {
 
 func NewBoatUsecase(t boat.Repository, timeout time.Duration) boat.Usecase {
 	return &boatUsecase{
-		boatRepo:t,
+		boatRepo:       t,
 		contextTimeout: timeout,
 	}
 }
