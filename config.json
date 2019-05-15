@@ -15,7 +15,7 @@
     "nameprod": "heroku_3kddwkj9"
   },
   "jwt":{
-    "private":"secret",
+    "private":"secret12345",
     "public":"key"
   }
 }

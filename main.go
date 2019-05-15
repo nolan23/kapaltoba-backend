@@ -8,8 +8,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/credential"
+	"github.com/nolan23/kapaltoba-backend/models"
+
 	"github.com/labstack/echo/middleware"
-	"github.com/nolan23/kapaltoba-backend/credentials/delivery/handler"
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,6 +33,10 @@ import (
 	_boatHttpDeliver "github.com/nolan23/kapaltoba-backend/boat/delivery/http"
 	_boatRepo "github.com/nolan23/kapaltoba-backend/boat/repository"
 	_boatUsecase "github.com/nolan23/kapaltoba-backend/boat/usecase"
+
+	_credentialHttpDeliver "github.com/nolan23/kapaltoba-backend/credential/delivery/http"
+	_credentialRepo "github.com/nolan23/kapaltoba-backend/credential/repository"
+	_credentialUsecase "github.com/nolan23/kapaltoba-backend/credential/usecase"
 
 	"github.com/labstack/echo"
 
@@ -68,7 +74,7 @@ func login(c echo.Context) error {
 	if username != "roby" || password != "roby123" {
 		return echo.ErrUnauthorized
 	}
-	claims := &jwtCusctomClaimns{
+	claims := &models.Claims{
 		"Roby",
 		"User",
 		jwt.StandardClaims{
@@ -76,7 +82,7 @@ func login(c echo.Context) error {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte("rahasia"))
+	t, err := token.SignedString([]byte(viper.GetString("jwt.private")))
 	if err != nil {
 		return err
 	}
@@ -86,13 +92,19 @@ func login(c echo.Context) error {
 }
 
 func restricted(c echo.Context) error {
+	log.Println("masuk restricted")
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*jwtCusctomClaimns)
-	name := claims.Name
+	claims := user.Claims.(*models.Claims)
+	name := claims.Username
 	return c.String(http.StatusOK, "welcome "+name)
 }
 
 func init() {
+	var ok bool
+	uri, ok = os.LookupEnv("MONGODB_URI")
+	if !ok {
+		uri = viper.GetString("database.uri")
+	}
 	viper.SetConfigFile(`config.json`)
 	err := viper.ReadInConfig()
 
@@ -102,15 +114,6 @@ func init() {
 
 	if viper.GetBool(`debug`) {
 		fmt.Println("Service RUN on DEBUG mode")
-	}
-
-}
-
-func init() {
-	var ok bool
-	uri, ok = os.LookupEnv("MONGODB_URI")
-	if !ok {
-		uri = viper.GetString("database.uri")
 	}
 
 }
@@ -148,24 +151,27 @@ func main() {
 	e := echo.New()
 	r := e.Group("")
 	config := middleware.JWTConfig{
-		Claims:     &handler.JwtCustomClaims{},
-		SigningKey: []byte(viper.GetString("jwt.key")),
+		Claims:        &models.Claims{},
+		SigningKey:    []byte(viper.GetString("jwt.private")),
+		SigningMethod: "HS256",
 	}
 	r.Use(middleware.JWTWithConfig(config))
 	// e.Use(middleware.Logger())
 	// e.Use(middleware.Recover())
-	// e.POST("/login", login)
-	// r := e.Group("/restricted")
+	e.POST("/login", login)
+	// r = e.Group("/restricted")
 	// config := middleware.JWTConfig{
 	// 	Claims:     &jwtCusctomClaimns{},
 	// 	SigningKey: []byte("rahasia"),
 	// }
 	// r.Use(middleware.JWTWithConfig(config))
-	// r.GET("", restricted)
+	// r.GET("/restricted", restricted)
+	credential.Init()
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 	userRepo := _userRepo.NewMongoUserRepository(database, "user")
 	tripRepo := _tripRepo.NewMongoTripRepository(database, "trip")
 	boatRepo := _boatRepo.NewMongoBoatRepository(database, "boat")
+	credentialRepo := _credentialRepo.NewMongoCredentialRepository(database, "credential")
 	transactionRepo := _transactionRepo.NewMongoTransactionRepository(database, "transaction")
 
 	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, transactionRepo, timeoutContext)
@@ -174,13 +180,15 @@ func main() {
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	_transactionHttpDeliver.NewTransactionHttpHandler(r, transactionUsecase)
 
-	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, timeoutContext)
+	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, boatRepo, timeoutContext)
 	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase)
 
 	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, timeoutContext)
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
 
-	handler.NewCredentialsHttpHandler(e)
+	credentialUsecase := _credentialUsecase.NewCredentialUsecase(credentialRepo, timeoutContext)
+	_credentialHttpDeliver.NewCredentialsHttpHandler(e, credentialUsecase)
+
 	port, ok := os.LookupEnv("PORT")
 
 	if ok == false {
