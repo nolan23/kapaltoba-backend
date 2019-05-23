@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -27,6 +28,7 @@ func NewCaptainHttpHandler(e *echo.Echo, bu captain.Usecase) {
 	e.POST("/captain", handler.Store)
 	e.GET("/captain/:id", handler.GetByID)
 	e.GET("/captain/u/:username", handler.GetByUsername)
+	e.GET("/captain/:id/trips", handler.GetTrips)
 }
 
 func (h *HttpCaptainHandler) FetchCaptain(c echo.Context) error {
@@ -99,6 +101,25 @@ func (h *HttpCaptainHandler) GetByUsername(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, captain)
+}
+
+func (h *HttpCaptainHandler) GetTrips(c echo.Context) error {
+	requestId := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	trips, err := h.CaptainUsecase.GetTrips(ctx, requestId)
+	if trips == nil {
+		log.Println("null trips")
+		return c.JSON(http.StatusNotFound, ResponseError{Message: "Trips not found"})
+	}
+	if err != nil {
+		log.Println("error in get trips in captain handler " + err.Error())
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, trips)
+
 }
 
 func getStatusCode(err error) int {
