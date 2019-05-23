@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/captain"
+
 	"github.com/nolan23/kapaltoba-backend/boat"
 
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -17,14 +19,16 @@ type tripUsecase struct {
 	tripRepo       trip.Repository
 	userRepo       user.Repository
 	boatRepo       boat.Repository
+	captainRepo    captain.Repository
 	contextTimeout time.Duration
 }
 
-func NewTripUsecase(t trip.Repository, us user.Repository, br boat.Repository, timeout time.Duration) trip.Usecase {
+func NewTripUsecase(t trip.Repository, us user.Repository, br boat.Repository, cr captain.Repository, timeout time.Duration) trip.Usecase {
 	return &tripUsecase{
 		tripRepo:       t,
 		userRepo:       us,
 		boatRepo:       br,
+		captainRepo:    cr,
 		contextTimeout: timeout,
 	}
 }
@@ -94,6 +98,18 @@ func (ts *tripUsecase) GetBoat(ctx context.Context, idBoat string) (boat *models
 		return nil, err
 	}
 	return boat, nil
+}
+
+func (ts *tripUsecase) GetCaptain(ctx context.Context, idCaptain string) (captain *models.Captain, err error) {
+	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
+	defer cancel()
+	log.Println("id " + idCaptain)
+	captain, err = ts.captainRepo.GetByID(ctx, idCaptain)
+	if err != nil {
+		log.Println("error getcaptain trip usecase " + err.Error())
+		return nil, err
+	}
+	return captain, nil
 }
 
 func (ts *tripUsecase) GetPassengers(ctx context.Context, idTrip string) ([]*models.User, error) {

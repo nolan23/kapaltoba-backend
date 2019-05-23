@@ -189,7 +189,7 @@ func main() {
 	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, captainRepo, timeoutContext)
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
 
-	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, boatRepo, timeoutContext)
+	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, boatRepo, captainRepo, timeoutContext)
 	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase, boatUsecase)
 
 	captainUsecase := _captainUsecase.NewCaptainUsecase(captainRepo, credentialRepo, timeoutContext)

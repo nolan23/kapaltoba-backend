@@ -16,6 +16,7 @@ type Captain struct {
 	Status      string             `bson:"status" json:"status"`
 	Boats       []string           `bson:"boats" json:"boats"`
 	Credential  string             `bson:"credential" json:"credential"`
+	Trips       []string           `bson:"trips" json:"trips"`
 	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
 	ModifiedAt  time.Time          `json:"modifiedAt" bson:"modifiedAt"`
 	Deleted     bool               `json:"deleted" bson:"deleted"`

@@ -8,6 +8,7 @@ import (
 
 type Trip struct {
 	ID          primitive.ObjectID `json:"_id" bson:"_id"`
+	Captain     string             `json:"captain" bson:"captain"`
 	Boat        string             `json:"boat" bson:"boat"`
 	Origin      string             `json:"origin" bson:"origin"`
 	Destination string             `json:"destination" bson:"destination"`

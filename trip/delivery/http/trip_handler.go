@@ -71,7 +71,7 @@ func (h *HttpTripHandler) FetchTrip(c echo.Context) error {
 				continue
 			}
 			var captain *models.Captain
-			captain, er = h.BoatUsecase.GetCaptain(ctx, boat.Captain)
+			captain, er = h.TripUsecase.GetCaptain(ctx, trip.Captain)
 			if er != nil {
 				log.Println("error get captain in trip handler " + er.Error())
 				continue
