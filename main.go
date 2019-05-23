@@ -147,6 +147,7 @@ func main() {
 		log.Println(err.Error())
 		os.Exit(1)
 	}
+
 	log.Println("Connected to MongoDB!")
 	e := echo.New()
 	r := e.Group("")
