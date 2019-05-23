@@ -207,12 +207,14 @@ func (h *HttpCaptainHandler) GetTripDetail(c echo.Context) error {
 			continue
 		}
 		var pas *Passenger
+		pas = &Passenger{}
 		pas.PassengerID = passenger.ID.Hex()
 		pas.PassengerName = passenger.Name
 		pas.TransactionID = trans.ID.Hex()
 		pas.Status = trans.Status
 		passengers = append(passengers, pas)
 	}
+	res = &ReturnData{}
 	res.Trip = trip
 	res.Passenger = passengers
 	return c.JSON(http.StatusFound, res)

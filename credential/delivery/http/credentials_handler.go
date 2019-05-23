@@ -72,16 +72,33 @@ func (h *HttpCredentialHandler) SignIn(c echo.Context) error {
 		log.Println(err)
 		return c.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
 	}
-	var user *models.User
-	user, err = h.UserUsecase.GetByUsername(ctx, credAux.Username)
-	if err != nil {
-		log.Println("error get user by username in credential handler " + err.Error())
-		return c.JSON(http.StatusNotFound, ResponseError{Message: "User not found"})
-	}
-	tokenString, err := credential.GenerateJWT(user.ID.Hex(), user.Name, credAux.Username, credAux.Role)
-	if err != nil {
-		log.Println(err)
-		return c.JSON(http.StatusForbidden, ResponseError{Message: err.Error()})
+	var tokenString string
+	if credAux.Role == "user" {
+		var user *models.User
+		user, err = h.UserUsecase.GetByUsername(ctx, credAux.Username)
+		if err != nil {
+			log.Println("error get user by username in credential handler " + err.Error())
+			return c.JSON(http.StatusNotFound, ResponseError{Message: "User not found"})
+		}
+		tokenString, err = credential.GenerateJWT(user.ID.Hex(), user.Name, credAux.Username, credAux.Role)
+		if err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusForbidden, ResponseError{Message: err.Error()})
+		}
+	} else if credAux.Role == "captain" {
+		var cap *models.Captain
+		cap, err = h.CaptainUsecase.GetByUsername(ctx, credAux.Username)
+		if err != nil {
+			log.Println("error get captain by username in credential handler " + err.Error())
+			return c.JSON(http.StatusNotFound, ResponseError{Message: "Captain not found"})
+		}
+		tokenString, err = credential.GenerateJWT(cap.ID.Hex(), cap.Name, credAux.Username, credAux.Role)
+		if err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusForbidden, ResponseError{Message: err.Error()})
+		}
+	} else {
+		return c.JSON(http.StatusForbidden, ResponseError{Message: "Role is not available"})
 	}
 
 	authCookie := http.Cookie{
