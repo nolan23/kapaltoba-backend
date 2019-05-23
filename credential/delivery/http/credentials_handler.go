@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/captain"
+
 	"github.com/nolan23/kapaltoba-backend/credential"
 	"github.com/nolan23/kapaltoba-backend/user"
 
@@ -21,12 +23,14 @@ type ResponseError struct {
 type HttpCredentialHandler struct {
 	CredentialUsecase credential.Usecase
 	UserUsecase       user.Usecase
+	CaptainUsecase    captain.Usecase
 }
 
-func NewCredentialsHttpHandler(e *echo.Echo, credentialUsecase credential.Usecase, userUsecase user.Usecase) {
+func NewCredentialsHttpHandler(e *echo.Echo, credentialUsecase credential.Usecase, userUsecase user.Usecase, captainUsecase captain.Usecase) {
 	handler := &HttpCredentialHandler{
 		CredentialUsecase: credentialUsecase,
 		UserUsecase:       userUsecase,
+		CaptainUsecase:    captainUsecase,
 	}
 	e.POST("/signin", handler.SignIn)
 	e.POST("/signup", handler.SignUp)
@@ -135,16 +139,31 @@ func (h *HttpCredentialHandler) SignUp(c echo.Context) error {
 		log.Println(err)
 		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
 	}
-	user := &models.User{}
-	user.Name = reg.Name
-	user.Email = reg.Email
-	user.Credential = insertedId
-	err = h.UserUsecase.Store(ctx, user)
-	if err != nil {
-		log.Println(err)
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+	if credAux.Role == "user" {
+		user := &models.User{}
+		user.Name = reg.Name
+		user.Email = reg.Email
+		user.Credential = insertedId
+		err = h.UserUsecase.Store(ctx, user)
+		if err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusCreated, ResponseError{Message: "User created successfully"})
+	} else if credAux.Role == "captain" {
+		captain := &models.Captain{}
+		captain.Name = reg.Name
+		captain.Email = reg.Email
+		captain.Credential = insertedId
+		err = h.CaptainUsecase.Store(ctx, captain)
+		if err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+		}
+		return c.JSON(http.StatusCreated, ResponseError{Message: "Captain created successfully"})
+	} else {
+		return c.JSON(http.StatusBadRequest, ResponseError{Message: "Role is not available. Please use lower case or try another one"})
 	}
-	return c.JSON(http.StatusCreated, ResponseError{Message: "User created successfully"})
 }
 
 func NullifyTokenCookies(c echo.Context) (string, error) {
