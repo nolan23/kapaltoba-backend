@@ -38,6 +38,10 @@ import (
 	_credentialRepo "github.com/nolan23/kapaltoba-backend/credential/repository"
 	_credentialUsecase "github.com/nolan23/kapaltoba-backend/credential/usecase"
 
+	_captainHttpDeliver "github.com/nolan23/kapaltoba-backend/captain/delivery/http"
+	_captainRepo "github.com/nolan23/kapaltoba-backend/captain/repository"
+	_captainUsecase "github.com/nolan23/kapaltoba-backend/captain/usecase"
+
 	"github.com/labstack/echo"
 
 	"github.com/spf13/viper"
@@ -174,6 +178,7 @@ func main() {
 	boatRepo := _boatRepo.NewMongoBoatRepository(database, "boat")
 	credentialRepo := _credentialRepo.NewMongoCredentialRepository(database, "credential")
 	transactionRepo := _transactionRepo.NewMongoTransactionRepository(database, "transaction")
+	captainRepo := _captainRepo.NewMongoCaptainRepository(database, "captain")
 
 	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, transactionRepo, timeoutContext)
 	_userHttpDeliver.NewUserHttpHandler(e, userUsecase)
@@ -187,8 +192,11 @@ func main() {
 	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, timeoutContext)
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
 
+	captainUsecase := _captainUsecase.NewCaptainUsecase(captainRepo, timeoutContext)
+	_captainHttpDeliver.NewCaptainHttpHandler(e, captainUsecase)
+
 	credentialUsecase := _credentialUsecase.NewCredentialUsecase(credentialRepo, timeoutContext)
-	_credentialHttpDeliver.NewCredentialsHttpHandler(e, credentialUsecase, userUsecase)
+	_credentialHttpDeliver.NewCredentialsHttpHandler(e, credentialUsecase, userUsecase, captainUsecase)
 
 	port, ok := os.LookupEnv("PORT")
 
