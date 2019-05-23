@@ -8,7 +8,7 @@ import (
 
 type Captain struct {
 	ID          primitive.ObjectID `json:"_id" bson:"_id"`
-	Name        string             `bson:"name" json"name"`
+	Name        string             `bson:"name" json:"name"`
 	Gender      string             `bson:"gender" json:"gender"`
 	PhoneNumber string             `bson:"phone_number" json:"phoneNumber"`
 	Email       string             `bson:"email" json:"email"`

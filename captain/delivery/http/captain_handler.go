@@ -2,11 +2,14 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/nolan23/kapaltoba-backend/transaction"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/nolan23/kapaltoba-backend/trip"
 	"github.com/nolan23/kapaltoba-backend/user"
@@ -49,6 +52,7 @@ func NewCaptainHttpHandler(e *echo.Echo, bu captain.Usecase, tu trip.Usecase, uu
 	}
 	e.GET("/captains", handler.FetchCaptain)
 	e.POST("/captain", handler.Store)
+	e.PUT("/captain/:id", handler.Edit)
 	e.GET("/captain/:id", handler.GetByID)
 	e.GET("/captain/u/:username", handler.GetByUsername)
 	e.GET("/captain/:id/trips", handler.GetTrips)
@@ -88,6 +92,32 @@ func (h *HttpCaptainHandler) Store(c echo.Context) error {
 
 	err = h.CaptainUsecase.Store(ctx, &captain)
 
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusCreated, captain)
+}
+
+func (h *HttpCaptainHandler) Edit(c echo.Context) error {
+	requestId := c.Param("id")
+	oid, err := primitive.ObjectIDFromHex(requestId)
+	if err != nil {
+		log.Println("error in handler " + err.Error())
+		return err
+	}
+	var captain models.Captain
+	err = c.Bind(&captain)
+	if err != nil {
+		fmt.Println("you are error " + err.Error())
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	captain.ID = oid
+	err = h.CaptainUsecase.Update(ctx, bson.M{"_id": oid}, &captain)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

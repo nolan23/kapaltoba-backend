@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,6 +30,7 @@ func NewTransactionHttpHandler(e *echo.Group, ts transaction.Usecase) {
 	}
 	e.GET("/transactions", handler.FetchTransaction)
 	e.POST("/transaction", handler.Store)
+	e.PUT("/transaction/:id", handler.Edit)
 	e.GET("/transaction/:id", handler.GetByID)
 	e.PUT("/transaction/:id/pay", handler.Pay)
 	e.PUT("/transaction/:id/cancel", handler.Cancel)
@@ -74,6 +76,32 @@ func (h *HttpTransactionHandler) Store(c echo.Context) error {
 
 	err = h.TransactionUsecase.Store(ctx, &transaction)
 
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusCreated, transaction)
+}
+
+func (h *HttpTransactionHandler) Edit(c echo.Context) error {
+	requestId := c.Param("id")
+	oid, err := primitive.ObjectIDFromHex(requestId)
+	if err != nil {
+		log.Println("error in handler " + err.Error())
+		return err
+	}
+	var transaction models.Transaction
+	err = c.Bind(&transaction)
+	if err != nil {
+		fmt.Println("you are error " + err.Error())
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	transaction.ID = oid
+	err = h.TransactionUsecase.Update(ctx, bson.M{"_id": oid}, &transaction)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
@@ -156,7 +184,10 @@ func (h *HttpTransactionHandler) updateTransactionStatus(c echo.Context, status 
 		log.Println("not found transaction in update transaction status")
 		return nil
 	}
-	err = h.TransactionUsecase.Update(context.Background(), bson.M{"_id": oid}, bson.M{"$set": bson.M{"status": status}})
+	var trans *models.Transaction
+	trans, err = h.TransactionUsecase.GetByID(ctx, requestId)
+	trans.Status = status
+	err = h.TransactionUsecase.Update(context.Background(), bson.M{"_id": oid}, trans)
 	if err != nil {
 		log.Println("error update handler " + err.Error())
 		return err

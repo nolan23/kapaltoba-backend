@@ -7,6 +7,7 @@ import (
 
 	"github.com/nolan23/kapaltoba-backend/credential"
 	"github.com/nolan23/kapaltoba-backend/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type credentialUsecase struct {
@@ -42,12 +43,13 @@ func (cs *credentialUsecase) GetByUsername(ctx context.Context, username string)
 	}
 	return res, nil
 }
-func (cs *credentialUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {
+func (cs *credentialUsecase) Update(ctx context.Context, selector interface{}, update *models.Credential) error {
 	ctx, cancel := context.WithTimeout(ctx, cs.contextTimeout)
 	defer cancel()
-	err := cs.credentialRepo.Update(ctx, selector, update)
+	update.ModifiedAt = time.Now()
+	err := cs.credentialRepo.Update(ctx, selector, bson.M{"$set": &update})
 	if err != nil {
-		log.Println("error update credential usecase " + err.Error())
+		log.Println("error update trip usecase " + err.Error())
 		return err
 	}
 	return nil

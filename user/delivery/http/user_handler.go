@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,6 +11,8 @@ import (
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/user"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ResponseError struct {
@@ -27,6 +30,7 @@ func NewUserHttpHandler(e *echo.Echo, us user.Usecase) {
 	}
 	e.GET("/users", handler.FetchUser)
 	e.POST("/user", handler.Store)
+	e.PUT("user/:id", handler.Edit)
 	e.GET("user/:id", handler.GetByID)
 	e.GET("user/:id/trips", handler.GetTrips)
 	e.GET("user/u/:username", handler.GetByUsername)
@@ -71,6 +75,31 @@ func (h *HttpUserHandler) Store(c echo.Context) error {
 	return c.JSON(http.StatusCreated, user)
 }
 
+func (h *HttpUserHandler) Edit(c echo.Context) error {
+	requestId := c.Param("id")
+	oid, err := primitive.ObjectIDFromHex(requestId)
+	if err != nil {
+		log.Println("error in handler " + err.Error())
+		return err
+	}
+	var user models.User
+	err = c.Bind(&user)
+	if err != nil {
+		fmt.Println("you are error " + err.Error())
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	user.ID = oid
+	err = h.UserUsecase.Update(ctx, bson.M{"_id": oid}, &user)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusCreated, user)
+}
 func (h *HttpUserHandler) GetByID(c echo.Context) error {
 	requestId := c.Param("id")
 	ctx := c.Request().Context()

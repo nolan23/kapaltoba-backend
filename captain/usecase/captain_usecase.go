@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/nolan23/kapaltoba-backend/trip"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/nolan23/kapaltoba-backend/credential"
 
@@ -90,16 +91,18 @@ func (ts *captainUsecase) GetTrips(ctx context.Context, id string) ([]*models.Tr
 	return captainTrips, nil
 }
 
-func (ts *captainUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {
+func (ts *captainUsecase) Update(ctx context.Context, selector interface{}, update *models.Captain) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
-	err := ts.captainRepo.Update(ctx, selector, update)
+	update.ModifiedAt = time.Now()
+	err := ts.captainRepo.Update(ctx, selector, bson.M{"$set": &update})
 	if err != nil {
-		log.Println("error update captain usecase " + err.Error())
+		log.Println("error update trip usecase " + err.Error())
 		return err
 	}
 	return nil
 }
+
 func (ts *captainUsecase) Store(ctx context.Context, captain *models.Captain) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()

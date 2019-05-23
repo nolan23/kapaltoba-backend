@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/nolan23/kapaltoba-backend/captain"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/nolan23/kapaltoba-backend/boat"
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -60,12 +61,13 @@ func (ts *boatUsecase) GetCaptain(ctx context.Context, idCaptain string) (*model
 	return res, nil
 }
 
-func (ts *boatUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {
+func (ts *boatUsecase) Update(ctx context.Context, selector interface{}, update *models.Boat) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
-	err := ts.boatRepo.Update(ctx, selector, update)
+	update.ModifiedAt = time.Now()
+	err := ts.boatRepo.Update(ctx, selector, bson.M{"$set": &update})
 	if err != nil {
-		log.Println("error update boat usecase " + err.Error())
+		log.Println("error update trip usecase " + err.Error())
 		return err
 	}
 	return nil

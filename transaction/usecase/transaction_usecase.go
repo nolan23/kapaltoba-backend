@@ -7,6 +7,7 @@ import (
 
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/transaction"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type transactionUsecase struct {
@@ -87,16 +88,18 @@ func (ts *transactionUsecase) GetByUsername(ctx context.Context, username string
 	}
 	return res, nil
 }
-func (ts *transactionUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {
+func (ts *transactionUsecase) Update(ctx context.Context, selector interface{}, update *models.Transaction) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
-	err := ts.transRepo.Update(ctx, selector, update)
+	update.ModifiedAt = time.Now()
+	err := ts.transRepo.Update(ctx, selector, bson.M{"$set": &update})
 	if err != nil {
-		log.Println("error update transaction usecase " + err.Error())
+		log.Println("error update trip usecase " + err.Error())
 		return err
 	}
 	return nil
 }
+
 func (ts *transactionUsecase) Store(ctx context.Context, transaction *models.Transaction) error {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()

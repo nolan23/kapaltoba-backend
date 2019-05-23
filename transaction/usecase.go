@@ -13,7 +13,7 @@ type Usecase interface {
 	GetByUserId(ctx context.Context, userId string) (*models.Transaction, error)
 	GetByTripId(ctx context.Context, tripId string) (*models.Transaction, error)
 	GetByUsername(ctx context.Context, username string) ([]*models.Transaction, error)
-	Update(ctx context.Context, selector interface{}, update interface{}) error
+	Update(ctx context.Context, selector interface{}, update *models.Transaction) error
 	Store(ctx context.Context, transaction *models.Transaction) error
 	Delete(ctx context.Context, id string) error
 }

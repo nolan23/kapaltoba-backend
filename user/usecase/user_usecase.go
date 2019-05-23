@@ -8,6 +8,7 @@ import (
 	"github.com/nolan23/kapaltoba-backend/credential"
 	"github.com/nolan23/kapaltoba-backend/transaction"
 	"github.com/nolan23/kapaltoba-backend/trip"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/user"
@@ -111,11 +112,13 @@ func (u *userUsecase) GetTransactions(ctx context.Context, id string) ([]*models
 	return transactions, nil
 }
 
-func (u *userUsecase) Update(ctx context.Context, selector interface{}, update interface{}) error {
+func (u *userUsecase) Update(ctx context.Context, selector interface{}, update *models.User) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
-	err := u.userRepo.Update(ctx, selector, update)
+	update.ModifiedAt = time.Now()
+	err := u.userRepo.Update(ctx, selector, bson.M{"$set": &update})
 	if err != nil {
+		log.Println("error update trip usecase " + err.Error())
 		return err
 	}
 	return nil
