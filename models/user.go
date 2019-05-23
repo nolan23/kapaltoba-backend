@@ -14,7 +14,7 @@ type User struct {
 	PhoneNumber  string             `bson:"phonenumber" json:"phonenumber"`
 	BirthDate    time.Time          `bson:"birthdate" json:"birthdate"`
 	ImageProfile string             `bson:"imageprofile" json:"imageprofile"`
-	TripHistory  interface{}        `bson:"triphistory" json:"triphistory" model:"Trip" relation:"1n"`
+	TripHistory  interface{}        `bson:"triphistory" json:"triphistory"`
 	Transactions interface{}        `bson:"transactions" json:"transactions"`
 	CreatedAt    time.Time          `json:"createdAt" bson:"createdAt"`
 	ModifiedAt   time.Time          `json:"modifiedAt" bson:"modifiedAt"`
