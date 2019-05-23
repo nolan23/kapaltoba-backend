@@ -63,6 +63,25 @@ func (m *mongoTransactionRepository) Fetch(ctx context.Context, limit int, skip 
 	return trans, next, nil
 }
 
+func (m *mongoTransactionRepository) FindBy(ctx context.Context, userID string, tripID string) (*models.Transaction, error) {
+	var result *models.Transaction
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		log.Println("error convert to ObjectID " + err.Error())
+	}
+	tid, er := primitive.ObjectIDFromHex(tripID)
+	if er != nil {
+		log.Println("error convert to ObjectID " + er.Error())
+	}
+	filter := bson.D{{"userID", uid}, {"tripID", tid}}
+	result, err = m.fetchOne(ctx, filter)
+	if err != nil {
+		log.Println("error find by id " + err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
 func (m *mongoTransactionRepository) fetchOne(ctx context.Context, query interface{}) (*models.Transaction, error) {
 	var result models.Transaction
 	err := m.DB.Collection(m.collectionName).FindOne(ctx, query).Decode(&result)

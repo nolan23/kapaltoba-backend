@@ -32,6 +32,16 @@ func (ts *transactionUsecase) Fetch(ctx context.Context, limit int, skip int, so
 	return listTransaction, nextSkip, nil
 }
 
+func (ts *transactionUsecase) FindBy(ctx context.Context, userID string, tripID string) (*models.Transaction, error) {
+	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
+	defer cancel()
+	res, err := ts.transRepo.FindBy(ctx, userID, tripID)
+	if err != nil {
+		log.Println("error find by transaction usecase " + err.Error())
+		return nil, err
+	}
+	return res, nil
+}
 func (ts *transactionUsecase) GetByID(ctx context.Context, id string) (*models.Transaction, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()

@@ -8,6 +8,7 @@ import (
 
 type Usecase interface {
 	Fetch(ctx context.Context, limit int, skip int, sort string) (res []*models.Transaction, nextSkip int, err error)
+	FindBy(ctx context.Context, userID string, tripID string) (*models.Transaction, error)
 	GetByID(ctx context.Context, id string) (*models.Transaction, error)
 	GetByUserId(ctx context.Context, userId string) (*models.Transaction, error)
 	GetByTripId(ctx context.Context, tripId string) (*models.Transaction, error)

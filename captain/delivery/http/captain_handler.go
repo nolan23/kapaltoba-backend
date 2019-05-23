@@ -6,6 +6,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/nolan23/kapaltoba-backend/transaction"
+
+	"github.com/nolan23/kapaltoba-backend/trip"
+	"github.com/nolan23/kapaltoba-backend/user"
+
 	"github.com/labstack/echo"
 	"github.com/nolan23/kapaltoba-backend/captain"
 	"github.com/nolan23/kapaltoba-backend/models"
@@ -16,19 +21,38 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
-type HttpCaptainHandler struct {
-	CaptainUsecase captain.Usecase
+type ReturnData struct {
+	Trip      *models.Trip `json:"trip"`
+	Passenger []*Passenger `json:"passengers"`
 }
 
-func NewCaptainHttpHandler(e *echo.Echo, bu captain.Usecase) {
+type Passenger struct {
+	PassengerID   string `json:"passengerID"`
+	PassengerName string `json:"passengerName"`
+	TransactionID string `json:"transactionID"`
+	Status        string `json:"status"`
+}
+
+type HttpCaptainHandler struct {
+	CaptainUsecase     captain.Usecase
+	TripUsecase        trip.Usecase
+	UserUsecase        user.Usecase
+	TransactionUsecase transaction.Usecase
+}
+
+func NewCaptainHttpHandler(e *echo.Echo, bu captain.Usecase, tu trip.Usecase, uu user.Usecase, trs transaction.Usecase) {
 	handler := &HttpCaptainHandler{
-		CaptainUsecase: bu,
+		CaptainUsecase:     bu,
+		TripUsecase:        tu,
+		UserUsecase:        uu,
+		TransactionUsecase: trs,
 	}
 	e.GET("/captains", handler.FetchCaptain)
 	e.POST("/captain", handler.Store)
 	e.GET("/captain/:id", handler.GetByID)
 	e.GET("/captain/u/:username", handler.GetByUsername)
 	e.GET("/captain/:id/trips", handler.GetTrips)
+	e.GET("/captain/trip/:idTrip", handler.GetTripDetail)
 }
 
 func (h *HttpCaptainHandler) FetchCaptain(c echo.Context) error {
@@ -120,6 +144,48 @@ func (h *HttpCaptainHandler) GetTrips(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, trips)
 
+}
+
+func (h *HttpCaptainHandler) GetTripDetail(c echo.Context) error {
+	idTrip := c.Param("idTrip")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	trip, err := h.TripUsecase.GetByID(ctx, idTrip)
+	if trip == nil {
+		log.Println("trip is empty ")
+		return c.JSON(http.StatusNotFound, ResponseError{Message: "Trip Not Found"})
+	}
+	if err != nil {
+		log.Println("error get trip " + err.Error())
+		return c.JSON(http.StatusNotFound, ResponseError{Message: "Not Found"})
+	}
+
+	var res *ReturnData
+	var passengers []*Passenger
+
+	for _, user := range trip.Passengers {
+		passenger, err := h.UserUsecase.GetByID(ctx, user)
+		if err != nil {
+			log.Println("error get user in trip usecase " + err.Error())
+			continue
+		}
+		trans, er := h.TransactionUsecase.FindBy(ctx, passenger.ID.Hex(), trip.ID.Hex())
+		if er != nil {
+			log.Println("error get transaction " + er.Error())
+			continue
+		}
+		var pas *Passenger
+		pas.PassengerID = passenger.ID.Hex()
+		pas.PassengerName = passenger.Name
+		pas.TransactionID = trans.ID.Hex()
+		pas.Status = trans.Status
+		passengers = append(passengers, pas)
+	}
+	res.Trip = trip
+	res.Passenger = passengers
+	return c.JSON(http.StatusFound, res)
 }
 
 func getStatusCode(err error) int {

@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/nolan23/kapaltoba-backend/models"
-	"github.com/nolan23/kapaltoba-backend/transaction"
 	"github.com/zebresel-com/mongodm"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -14,8 +13,8 @@ type mongoDBTransactionRepository struct {
 	Conn *mongodm.Connection
 }
 
-func NewMongoDBTransactionRepository(Conn *mongodm.Connection) transaction.Repository {
-	return &mongoDBTransactionRepository{Conn}
+func NewMongoDBTransactionRepository(Conn *mongodm.Connection) {
+	//	return &mongoDBTransactionRepository{Conn}
 }
 
 func (m *mongoDBTransactionRepository) fetch(ctx context.Context, query interface{}, limit int, skip int, sort string) (res []*models.Transaction, nextSkip int, err error) {
