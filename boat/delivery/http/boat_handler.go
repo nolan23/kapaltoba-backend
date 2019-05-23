@@ -29,7 +29,7 @@ func NewBoatHttpHandler(e *echo.Echo, bu boat.Usecase) {
 	}
 	e.GET("/boats", handler.FetchBoat)
 	e.POST("/boat", handler.Store)
-	e.PUT("/boat:id", handler.Edit)
+	e.PUT("/boat/:id", handler.Edit)
 	e.GET("/boat/:id", handler.GetByID)
 }
 
