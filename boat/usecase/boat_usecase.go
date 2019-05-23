@@ -5,18 +5,22 @@ import (
 	"log"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/captain"
+
 	"github.com/nolan23/kapaltoba-backend/boat"
 	"github.com/nolan23/kapaltoba-backend/models"
 )
 
 type boatUsecase struct {
 	boatRepo       boat.Repository
+	captainRepo    captain.Repository
 	contextTimeout time.Duration
 }
 
-func NewBoatUsecase(t boat.Repository, timeout time.Duration) boat.Usecase {
+func NewBoatUsecase(t boat.Repository, cr captain.Repository, timeout time.Duration) boat.Usecase {
 	return &boatUsecase{
 		boatRepo:       t,
+		captainRepo:    cr,
 		contextTimeout: timeout,
 	}
 }
@@ -39,6 +43,18 @@ func (ts *boatUsecase) GetByID(ctx context.Context, id string) (*models.Boat, er
 	res, err := ts.boatRepo.GetByID(ctx, id)
 	if err != nil {
 		log.Println("error getById boat usecase " + err.Error())
+		return nil, err
+	}
+	return res, nil
+}
+
+func (ts *boatUsecase) GetCaptain(ctx context.Context, idCaptain string) (*models.Captain, error) {
+	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
+	defer cancel()
+
+	res, err := ts.captainRepo.GetByID(ctx, idCaptain)
+	if err != nil {
+		log.Println("error get captain boat usecase " + err.Error())
 		return nil, err
 	}
 	return res, nil

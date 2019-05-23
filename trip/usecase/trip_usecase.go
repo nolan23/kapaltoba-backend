@@ -99,14 +99,14 @@ func (ts *tripUsecase) GetBoat(ctx context.Context, idBoat string) (boat *models
 func (ts *tripUsecase) GetPassengers(ctx context.Context, idTrip string) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
-	trip, er := ts.GetByID(ctx, idTrip)
+	_trip, er := ts.GetByID(ctx, idTrip)
 	if er != nil {
 		log.Println("error get passenger get id trip" + er.Error())
 		return nil, er
 	}
 	var passengers []*models.User
 
-	for _, user := range trip.Passengers.([]string) {
+	for _, user := range _trip.Passengers {
 		passenger, err := ts.userRepo.GetByID(ctx, user)
 		if err != nil {
 			log.Println("error get user in trip usecase " + err.Error())
@@ -120,7 +120,7 @@ func (ts *tripUsecase) GetPassengers(ctx context.Context, idTrip string) ([]*mod
 func (ts *tripUsecase) AddPassenger(ctx context.Context, selector interface{}, trip *models.Trip, passengerId string) (*models.Trip, error) {
 	ctx, cancel := context.WithTimeout(ctx, ts.contextTimeout)
 	defer cancel()
-	trip.Passengers = append(trip.Passengers.([]string), passengerId)
+	trip.Passengers = append(trip.Passengers, passengerId)
 	if trip.Available == 0 {
 		return nil, nil
 	}

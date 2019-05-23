@@ -186,11 +186,11 @@ func main() {
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	_transactionHttpDeliver.NewTransactionHttpHandler(r, transactionUsecase)
 
-	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, boatRepo, timeoutContext)
-	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase)
-
-	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, timeoutContext)
+	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, captainRepo, timeoutContext)
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
+
+	tripUsecase := _tripUsecase.NewTripUsecase(tripRepo, userRepo, boatRepo, timeoutContext)
+	_tripHttpDeliver.NewTripHttpHandler(e, tripUsecase, boatUsecase)
 
 	captainUsecase := _captainUsecase.NewCaptainUsecase(captainRepo, credentialRepo, timeoutContext)
 	_captainHttpDeliver.NewCaptainHttpHandler(e, captainUsecase)

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/nolan23/kapaltoba-backend/boat"
+
 	"github.com/labstack/echo"
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/trip"
@@ -28,16 +30,19 @@ type ReturnTrip struct {
 
 type HttpTripHandler struct {
 	TripUsecase trip.Usecase
+	BoatUsecase boat.Usecase
 }
 
-func NewTripHttpHandler(e *echo.Echo, ts trip.Usecase) {
+func NewTripHttpHandler(e *echo.Echo, ts trip.Usecase, bs boat.Usecase) {
 	handler := &HttpTripHandler{
 		TripUsecase: ts,
+		BoatUsecase: bs,
 	}
 	e.GET("/trips", handler.FetchTrip)
+	e.GET("/trip/:id", handler.GetByID)
 	e.POST("/trip", handler.Store)
+	e.PUT("/trip/:id", handler.EditTrip)
 	e.GET("/trip/:id/passengers", handler.GetPassenger)
-	e.PUT("/trip/edit/:id", handler.EditTrip)
 
 }
 
@@ -58,14 +63,21 @@ func (h *HttpTripHandler) FetchTrip(c echo.Context) error {
 	for _, trip := range listTrip {
 		ret := &ReturnTrip{}
 		ret.Trip = trip
-		if trip.Boat != nil {
-			idBoat := trip.Boat.(string)
+		if trip.Boat != "" {
+			idBoat := trip.Boat
 			boat, er := h.TripUsecase.GetBoat(ctx, idBoat)
 			if er != nil {
 				log.Println("error get boat " + er.Error())
+				continue
+			}
+			var captain *models.Captain
+			captain, er = h.BoatUsecase.GetCaptain(ctx, boat.Captain)
+			if er != nil {
+				log.Println("error get captain in trip handler " + er.Error())
+				continue
 			}
 			ret.NamaKapal = boat.BoatName
-			ret.Kapten = boat.Captain
+			ret.Kapten = captain.Name
 			ret.AnakKapal = boat.ViceCaptains
 		}
 
@@ -77,6 +89,20 @@ func (h *HttpTripHandler) FetchTrip(c echo.Context) error {
 	c.Response().Header().Set(`X-Skip`, strconv.Itoa(nextSkip))
 
 	return c.JSON(http.StatusOK, returnTrip)
+}
+
+func (h *HttpTripHandler) GetByID(c echo.Context) error {
+	requestId := c.Param("id")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	user, err := h.TripUsecase.GetByID(ctx, requestId)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, user)
 }
 
 func (h *HttpTripHandler) GetPassenger(c echo.Context) error {
