@@ -26,6 +26,7 @@ func NewCaptainHttpHandler(e *echo.Echo, bu captain.Usecase) {
 	e.GET("/captains", handler.FetchCaptain)
 	e.POST("/captain", handler.Store)
 	e.GET("/captain/:id", handler.GetByID)
+	e.GET("/captain/u/:username", handler.GetByUsername)
 }
 
 func (h *HttpCaptainHandler) FetchCaptain(c echo.Context) error {
@@ -79,6 +80,25 @@ func (h *HttpCaptainHandler) GetByID(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+func (h *HttpCaptainHandler) GetByUsername(c echo.Context) error {
+	requestName := c.Param("username")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	captain, err := h.CaptainUsecase.GetByUsername(ctx, requestName)
+
+	if captain == nil {
+		return c.JSON(http.StatusNotFound, ResponseError{Message: "Captain not found"})
+	}
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, captain)
 }
 
 func getStatusCode(err error) int {

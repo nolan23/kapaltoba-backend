@@ -42,6 +42,11 @@ func (m *mongoDBUserRepository) Fetch(ctx context.Context, limit int, skip int, 
 	return result, nextSkip, nil
 }
 
+func (m *mongoDBUserRepository) GetByCredID(ctx context.Context, id string) (*models.User, error) {
+
+	return nil, nil
+}
+
 func (m *mongoDBUserRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
 	User := m.Conn.Model("User")
 	user := &models.User{}

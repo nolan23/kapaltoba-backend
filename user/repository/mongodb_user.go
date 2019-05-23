@@ -96,6 +96,18 @@ func (m *mongoUserRepository) GetByUsername(ctx context.Context, username string
 	}
 	return result, nil
 }
+
+func (m *mongoUserRepository) GetByCredID(ctx context.Context, id string) (*models.User, error) {
+	var result *models.User
+	filter := bson.D{{"credential", id}}
+	result, err := m.fetchOne(ctx, filter)
+	if err != nil {
+		log.Println("error find by credential " + err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
 func (m *mongoUserRepository) Update(ctx context.Context, selector interface{}, update interface{}) error {
 	updateResult, err := m.DB.Collection(m.collectionName).UpdateOne(ctx, selector, update)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/nolan23/kapaltoba-backend/models"
 	"github.com/nolan23/kapaltoba-backend/transaction"
@@ -36,6 +37,10 @@ func NewTransactionHttpHandler(e *echo.Group, ts transaction.Usecase) {
 }
 
 func (h *HttpTransactionHandler) FetchTransaction(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*models.Claims)
+	log.Println("user " + claims.Username)
+
 	limit := c.QueryParam("limit")
 	limitNum, _ := strconv.Atoi(limit)
 	skip := c.QueryParam("skip")

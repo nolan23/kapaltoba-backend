@@ -71,29 +71,29 @@ type jwtCusctomClaimns struct {
 	jwt.StandardClaims
 }
 
-func login(c echo.Context) error {
-	username := c.FormValue("username")
-	password := c.FormValue("password")
+// func login(c echo.Context) error {
+// 	username := c.FormValue("username")
+// 	password := c.FormValue("password")
 
-	if username != "roby" || password != "roby123" {
-		return echo.ErrUnauthorized
-	}
-	claims := &models.Claims{
-		"Roby",
-		"User",
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 36).Unix(),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(viper.GetString("jwt.private")))
-	if err != nil {
-		return err
-	}
-	return c.JSON(http.StatusOK, echo.Map{
-		"token": t,
-	})
-}
+// 	if username != "roby" || password != "roby123" {
+// 		return echo.ErrUnauthorized
+// 	}
+// 	claims := &models.Claims{
+// 		"Roby",
+// 		"User",
+// 		jwt.StandardClaims{
+// 			ExpiresAt: time.Now().Add(time.Hour * 36).Unix(),
+// 		},
+// 	}
+// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+// 	t, err := token.SignedString([]byte(viper.GetString("jwt.private")))
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return c.JSON(http.StatusOK, echo.Map{
+// 		"token": t,
+// 	})
+// }
 
 func restricted(c echo.Context) error {
 	log.Println("masuk restricted")
@@ -163,7 +163,7 @@ func main() {
 	r.Use(middleware.JWTWithConfig(config))
 	// e.Use(middleware.Logger())
 	// e.Use(middleware.Recover())
-	e.POST("/login", login)
+	// e.POST("/login", login)
 	// r = e.Group("/restricted")
 	// config := middleware.JWTConfig{
 	// 	Claims:     &jwtCusctomClaimns{},
@@ -180,7 +180,7 @@ func main() {
 	transactionRepo := _transactionRepo.NewMongoTransactionRepository(database, "transaction")
 	captainRepo := _captainRepo.NewMongoCaptainRepository(database, "captain")
 
-	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, transactionRepo, timeoutContext)
+	userUsecase := _userUsecase.NewUserUsecase(userRepo, tripRepo, transactionRepo, credentialRepo, timeoutContext)
 	_userHttpDeliver.NewUserHttpHandler(e, userUsecase)
 
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
@@ -192,7 +192,7 @@ func main() {
 	boatUsecase := _boatUsecase.NewBoatUsecase(boatRepo, timeoutContext)
 	_boatHttpDeliver.NewBoatHttpHandler(e, boatUsecase)
 
-	captainUsecase := _captainUsecase.NewCaptainUsecase(captainRepo, timeoutContext)
+	captainUsecase := _captainUsecase.NewCaptainUsecase(captainRepo, credentialRepo, timeoutContext)
 	_captainHttpDeliver.NewCaptainHttpHandler(e, captainUsecase)
 
 	credentialUsecase := _credentialUsecase.NewCredentialUsecase(credentialRepo, timeoutContext)

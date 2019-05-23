@@ -85,6 +85,17 @@ func (m *mongoCaptainRepository) GetByID(ctx context.Context, id string) (*model
 	return result, nil
 }
 
+func (m *mongoCaptainRepository) GetByCredID(ctx context.Context, id string) (*models.Captain, error) {
+	var result *models.Captain
+	filter := bson.D{{"credential", id}}
+	result, err := m.fetchOne(ctx, filter)
+	if err != nil {
+		log.Println("error find by credential " + err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
 func (m *mongoCaptainRepository) Update(ctx context.Context, selector interface{}, update interface{}) error {
 	updateResult, err := m.DB.Collection(m.collectionName).UpdateOne(ctx, selector, update)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/nolan23/kapaltoba-backend/credential"
 	"github.com/nolan23/kapaltoba-backend/transaction"
 	"github.com/nolan23/kapaltoba-backend/trip"
 
@@ -16,14 +17,16 @@ type userUsecase struct {
 	userRepo       user.Repository
 	tripRepo       trip.Repository
 	transRepo      transaction.Repository
+	credentialRepo credential.Repository
 	contextTimeout time.Duration
 }
 
-func NewUserUsecase(a user.Repository, tr trip.Repository, trr transaction.Repository, timeout time.Duration) user.Usecase {
+func NewUserUsecase(a user.Repository, tr trip.Repository, trr transaction.Repository, cr credential.Repository, timeout time.Duration) user.Usecase {
 	return &userUsecase{
 		userRepo:       a,
 		tripRepo:       tr,
 		transRepo:      trr,
+		credentialRepo: cr,
 		contextTimeout: timeout,
 	}
 }
@@ -53,11 +56,17 @@ func (u *userUsecase) GetByUsername(ctx context.Context, username string) (*mode
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
-	res, err := u.userRepo.GetByUsername(ctx, username)
+	cred, err := u.credentialRepo.GetByUsername(ctx, username)
 	if err != nil {
+		log.Println("error get cred in user usecase " + err.Error())
 		return nil, err
 	}
-	return res, nil
+	usr, er := u.userRepo.GetByCredID(ctx, cred.ID.Hex())
+	if er != nil {
+		log.Println("error get user by credential " + er.Error())
+		return nil, er
+	}
+	return usr, nil
 }
 
 func (u *userUsecase) GetUserTrips(ctx context.Context, id string) ([]*models.Trip, error) {

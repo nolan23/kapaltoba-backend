@@ -29,6 +29,7 @@ func NewUserHttpHandler(e *echo.Echo, us user.Usecase) {
 	e.POST("/user", handler.Store)
 	e.GET("user/:id", handler.GetByID)
 	e.GET("user/:id/trips", handler.GetTrips)
+	e.GET("user/u/:username", handler.GetByUsername)
 }
 
 func (h *HttpUserHandler) FetchUser(c echo.Context) error {
@@ -77,6 +78,20 @@ func (h *HttpUserHandler) GetByID(c echo.Context) error {
 		ctx = context.Background()
 	}
 	user, err := h.UserUsecase.GetByID(ctx, requestId)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, user)
+}
+
+func (h *HttpUserHandler) GetByUsername(c echo.Context) error {
+	requestName := c.Param("username")
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	user, err := h.UserUsecase.GetByUsername(ctx, requestName)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
