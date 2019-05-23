@@ -72,7 +72,13 @@ func (h *HttpCredentialHandler) SignIn(c echo.Context) error {
 		log.Println(err)
 		return c.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
 	}
-	tokenString, err := credential.GenerateJWT(credAux.Username, credAux.Role)
+	var user *models.User
+	user, err = h.UserUsecase.GetByUsername(ctx, credAux.Username)
+	if err != nil {
+		log.Println("error get user by username in credential handler " + err.Error())
+		return c.JSON(http.StatusNotFound, ResponseError{Message: "User not found"})
+	}
+	tokenString, err := credential.GenerateJWT(user.ID.Hex(), user.Name, credAux.Username, credAux.Role)
 	if err != nil {
 		log.Println(err)
 		return c.JSON(http.StatusForbidden, ResponseError{Message: err.Error()})

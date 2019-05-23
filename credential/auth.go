@@ -45,7 +45,7 @@ func IsJTIInWhitelist(jti string) (string, bool) {
 	return jtw, exists
 }
 
-func GenerateJWT(username string, role string) (string, error) {
+func GenerateJWT(id string, username string, name string, role string) (string, error) {
 
 	// If there is a jwt in the whitelist for the user, invalidates it.
 	_, ok := IsJTIInWhitelist(username)
@@ -55,6 +55,8 @@ func GenerateJWT(username string, role string) (string, error) {
 	}
 
 	claims := &models.Claims{
+		ID:       id,
+		Name:     name,
 		Username: username,
 		Role:     role,
 		StandardClaims: jwt.StandardClaims{
